@@ -1,0 +1,198 @@
+/* =========================================================
+   Obras: listado (/proyectos) y página de cada obra
+   ========================================================= */
+
+/* ---- Barra de filtros fija ---- */
+.obras-bar{position:sticky;top:calc(78px + env(safe-area-inset-top,0px));z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.obras-bar .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:12px;padding-bottom:12px}
+.obras-bar .filters{margin:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:2px}
+.obras-bar .filters::-webkit-scrollbar{display:none}
+.obras-bar .chip{white-space:nowrap}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:40px;padding:3px;background:#fff;flex:none}
+.seg button{display:inline-flex;align-items:center;gap:6px;border:0;background:none;border-radius:40px;padding:7px 14px;font-weight:700;font-size:.9rem;color:var(--muted)}
+.seg button svg{width:16px;height:16px}
+.seg button[aria-pressed="true"]{background:var(--navy);color:#fff}
+
+/* ---- Obra destacada del listado ---- */
+.feat-obra{display:grid;grid-template-columns:1.35fr 1fr;background:var(--navy);color:#fff;border-radius:12px;overflow:hidden;margin-bottom:56px}
+.feat-obra .fo-media{position:relative;min-height:420px;background:var(--navy-2)}
+.feat-obra .fo-media > *{position:absolute;inset:0}
+.feat-obra .fo-body{padding:40px 40px 36px;display:flex;flex-direction:column}
+.feat-obra .fo-body small{color:var(--blue-2);font-weight:700;font-size:.86rem}
+.feat-obra h2{font-size:clamp(1.9rem,3.2vw,2.8rem);font-stretch:122%;margin-top:8px}
+.feat-obra .fo-body p{color:#C8D2E2;margin-top:14px}
+.feat-obra .ficha{border-color:rgba(255,255,255,.18);font-size:.92rem}
+.feat-obra .ficha dt{color:#9FB0C8}
+.feat-obra .fo-actions{margin-top:auto;padding-top:26px;display:flex;gap:10px;flex-wrap:wrap}
+
+/* ---- Comparación lado a lado (cuando las fotos no comparten encuadre) ---- */
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:3px;background:var(--navy);height:100%}
+.cmp figure{position:relative;margin:0;overflow:hidden;min-height:0}
+.cmp img{width:100%;height:100%;object-fit:cover;display:block}
+.cmp figcaption{position:absolute;top:14px;left:14px;background:rgba(8,20,40,.82);color:#fff;font-weight:700;font-size:.82rem;padding:6px 11px;border-radius:4px}
+.cmp figure:first-child img{filter:saturate(.9)}
+
+/* ---- Tarjetas: insignias y enlace ---- */
+.badges{position:absolute;left:12px;bottom:12px;z-index:1;display:flex;gap:6px;flex-wrap:wrap}
+.badges span{display:inline-flex;align-items:center;gap:5px;background:rgba(8,20,40,.82);color:#fff;font-size:.76rem;font-weight:700;padding:5px 9px;border-radius:4px}
+.badges svg{width:13px;height:13px}
+.badges .ba-b{background:var(--blue)}
+.card .media picture,.card .media img{display:block;width:100%;height:100%;object-fit:cover}
+.go-obra{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:.93rem;color:var(--blue);text-decoration:none}
+.go-obra svg{width:18px;height:18px;transition:transform .25s}
+.go-obra:hover svg{transform:translateX(3px)}
+.card .actions{margin-top:18px}
+.views [hidden]{display:none!important}
+.map-view .obras-map{height:620px}
+.map-view .map-head{margin-top:0}
+
+/* ---- Hero de obra ---- */
+.obra-hero{position:relative;min-height:min(78vh,760px);display:flex;align-items:flex-end;color:#fff;background:var(--navy);overflow:hidden}
+.obra-hero > picture,.obra-hero > picture img,.obra-hero > .ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.obra-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,20,40,.7) 0%,rgba(8,20,40,0) 22%),linear-gradient(0deg,rgba(8,20,40,.94) 0%,rgba(8,20,40,.55) 42%,rgba(8,20,40,.15) 75%),linear-gradient(90deg,rgba(8,20,40,.55),rgba(8,20,40,0) 60%)}
+.obra-hero .wrap{position:relative;z-index:1;width:100%;padding-top:150px;padding-bottom:56px}
+.obra-hero .crumbs a{color:#C8D2E2}
+.obra-hero h1{font-size:clamp(2.6rem,7vw,5.6rem);font-stretch:125%;font-weight:850;letter-spacing:-.035em;line-height:.95;max-width:16ch}
+.obra-hero .meta{margin-top:18px;color:#C8D2E2;font-size:1.05rem;display:flex;flex-wrap:wrap;gap:6px 18px}
+.obra-hero .meta b{color:#fff;font-weight:700}
+.obra-hero .cota{color:var(--blue-2);max-width:460px}
+.obra-hero .ph{display:flex;align-items:center;justify-content:center}
+.obra-hero .ph svg{width:120px;height:120px;opacity:.35}
+
+/* ---- Ficha técnica ---- */
+.ficha-bar{border-bottom:1px solid var(--line);background:#fff}
+.ficha-bar dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin:0}
+.ficha-bar .it{padding:26px 22px 24px 0;border-right:1px solid var(--line);margin-right:22px}
+.ficha-bar .it:last-child{border-right:0;margin-right:0}
+.ficha-bar dt{font-size:.82rem;font-weight:700;color:var(--muted);margin-bottom:6px}
+.ficha-bar dd{margin:0;font-weight:700;font-stretch:108%;line-height:1.35}
+.ficha-bar dd a{color:var(--blue);text-decoration:none}
+.ficha-bar dd a:hover{text-decoration:underline}
+.ficha-bar dd.coord{color:var(--blue);font-variant-numeric:tabular-nums}
+
+/* ---- Reto / solución / resultado ---- */
+.story{padding:90px 0}
+.story-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
+.story-grid article{border-top:2px solid var(--blue);padding-top:20px}
+.story-grid h2{font-size:1.35rem;font-stretch:118%}
+.story-grid p{color:var(--muted);margin-top:12px;font-size:1.02rem}
+.story .lead{margin-bottom:46px;font-size:1.2rem;color:var(--ink);max-width:56ch}
+
+/* ---- Antes / después en página de obra ---- */
+.obra-ba{padding:0 0 90px}
+.obra-ba h2{font-size:clamp(1.7rem,3vw,2.3rem);margin-bottom:22px}
+.obra-ba .ba-frame,.obra-ba .cmp{border-radius:10px;overflow:hidden}
+.obra-ba .cmp{aspect-ratio:16/7}
+.obra-ba .note{color:var(--muted);font-size:.9rem;margin-top:12px}
+
+/* ---- Galería ---- */
+.gallery{padding:90px 0;background:var(--paper)}
+.gal-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:28px}
+.gal-head h2{font-size:clamp(1.7rem,3vw,2.3rem)}
+.gal-head .count-txt{color:var(--muted);margin-top:6px}
+.gal-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.gal-grid{columns:3 300px;column-gap:14px}
+.gal-item{display:block;position:relative;margin:0 0 14px;break-inside:avoid;border-radius:8px;overflow:hidden;background:var(--navy-2);cursor:zoom-in}
+.gal-item img{display:block;width:100%;height:auto;transition:transform .6s ease}
+.gal-item:hover img{transform:scale(1.03)}
+.gal-item .fase{position:absolute;left:10px;top:10px;background:rgba(8,20,40,.82);color:#fff;font-size:.76rem;font-weight:700;padding:4px 9px;border-radius:4px}
+.gal-item:focus-visible{outline:3px solid var(--blue-2);outline-offset:3px}
+
+/* ---- Visor a pantalla completa ---- */
+.lb{position:fixed;inset:0;z-index:120;background:rgba(5,12,24,.97);display:flex;flex-direction:column;color:#fff;touch-action:pan-y}
+.lb[hidden]{display:none}
+.lb-top{display:flex;justify-content:space-between;align-items:center;padding:calc(14px + env(safe-area-inset-top,0px)) 18px 10px}
+.lb-count{font-weight:700;font-variant-numeric:tabular-nums;color:#C8D2E2}
+.lb-stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;min-height:0;padding:0 72px}
+.lb-stage img{max-width:100%;max-height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
+.lb-cap{text-align:center;padding:12px 18px calc(18px + env(safe-area-inset-bottom,0px));color:#C8D2E2;font-size:.95rem}
+.lb button{background:rgba(255,255,255,.1);border:0;color:#fff;width:48px;height:48px;border-radius:50%;display:grid;place-items:center}
+.lb button:hover{background:rgba(255,255,255,.2)}
+.lb button svg{width:22px;height:22px}
+.lb-prev,.lb-next{position:absolute;top:50%;transform:translateY(-50%)}
+.lb-prev{left:14px}.lb-next{right:14px}
+@media (max-width:640px){.lb-stage{padding:0 8px}.lb-prev,.lb-next{top:auto;bottom:-58px;transform:none}.lb-prev{left:18px}.lb-next{right:18px}.lb-cap{padding-left:80px;padding-right:80px}}
+
+/* ---- Ubicación y servicios ---- */
+.obra-loc{padding:90px 0}
+.obra-loc-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:48px;align-items:start}
+.obra-map{height:400px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:var(--navy-2);z-index:0}
+.obra-loc h2{font-size:clamp(1.5rem,2.6vw,2rem)}
+.obra-loc .coord-line{margin-top:10px;color:var(--blue);font-weight:700;font-variant-numeric:tabular-nums}
+.svc-applied{display:grid;gap:10px;margin-top:22px}
+.svc-applied a{display:grid;grid-template-columns:40px 1fr 18px;align-items:center;gap:10px;padding:14px 16px;border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--ink);font-weight:700;background:#fff}
+.svc-applied a:hover{border-color:var(--blue)}
+.svc-applied a > svg:first-child{width:28px;height:28px;color:var(--blue)}
+.svc-applied a > svg:last-child{width:18px;height:18px;color:var(--blue)}
+.obra-loc .btn{margin-top:22px}
+
+/* ---- Obras similares y navegación ---- */
+.similar{padding:90px 0;background:var(--paper)}
+.similar h2{font-size:clamp(1.6rem,2.8vw,2.2rem);margin-bottom:26px}
+.sim-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.sim-card{display:block;text-decoration:none;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden;transition:border-color .25s,box-shadow .25s}
+.sim-card:hover{border-color:#B9C6DB;box-shadow:0 14px 30px -18px rgba(11,27,51,.35)}
+.sim-card .m{aspect-ratio:16/10;position:relative;background:var(--navy-2);overflow:hidden}
+.sim-card .m img{width:100%;height:100%;object-fit:cover;display:block}
+.sim-card .t{padding:16px 18px 18px}
+.sim-card small{color:var(--blue);font-weight:700;font-size:.8rem}
+.sim-card h3{font-size:1.1rem;margin-top:4px}
+.obra-nav{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.obra-nav a{display:flex;flex-direction:column;gap:4px;padding:30px 24px;text-decoration:none;color:var(--ink)}
+.obra-nav a:hover{background:var(--paper)}
+.obra-nav a small{color:var(--muted);font-weight:600;display:flex;align-items:center;gap:6px}
+.obra-nav a small svg{width:16px;height:16px}
+.obra-nav a b{font-stretch:115%;font-size:1.15rem}
+.obra-nav a.next{text-align:right;align-items:flex-end;border-left:1px solid var(--line)}
+.obra-cta .wrap{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
+.obra-cta .acts{display:flex;gap:10px;flex-wrap:wrap}
+.obra-cta .btn-share{background:transparent;border-color:rgba(255,255,255,.6);color:#fff}
+.obra-cta .btn-share:hover{background:rgba(255,255,255,.12)}
+
+@media (max-width:1000px){
+  .feat-obra{grid-template-columns:1fr}.feat-obra .fo-media{min-height:0;aspect-ratio:16/10}
+  .story-grid{grid-template-columns:1fr;gap:28px}
+  .obra-loc-grid{grid-template-columns:1fr}
+  .sim-grid{grid-template-columns:1fr 1fr}
+  .obra-ba .cmp{aspect-ratio:4/3}
+}
+@media (max-width:820px){
+  .obras-bar .wrap{gap:10px}
+  .obras-bar .filters{flex:1;min-width:0;margin-right:-4px}
+  .seg button{padding:7px 10px}
+  .seg button .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+}
+@media (max-width:640px){
+  .feat-obra .fo-body{padding:26px 22px}
+  .ficha-bar dl{grid-template-columns:1fr 1fr}
+  .ficha-bar .it{border-right:0;margin-right:0;padding:18px 10px 16px 0;border-bottom:1px solid var(--line)}
+  .story,.gallery,.obra-loc,.similar{padding:64px 0}
+  .gal-grid{columns:2 140px;column-gap:8px}.gal-item{margin-bottom:8px}
+  .sim-grid{grid-template-columns:1fr}
+  .obra-nav a{padding:22px 16px}
+  .obra-map{height:300px}
+  .map-view .obras-map{height:460px}
+  .cmp{grid-template-columns:1fr;grid-template-rows:1fr 1fr}
+  .obra-ba .cmp{aspect-ratio:3/4}
+}
+.pop a.pop-open{display:inline-block;text-decoration:none}
+.gal-item[hidden]{display:none}
+.card .media .ph{position:absolute;inset:0}
+.pd-photo .ph{position:absolute;inset:0}
+.story-solo{padding:64px 0 24px}.story-solo .lead{margin-bottom:0}
+.leaflet-popup .pop a.pop-open,.leaflet-container .pop a.pop-open{color:#fff}
+
+/* Listado: título enlazado a la página de la obra; el resto de la tarjeta abre la vista rápida */
+.card h3 .card-title{position:relative;z-index:2;color:inherit;text-decoration:none}
+.card h3 .card-title:hover{color:var(--blue);text-decoration:underline;text-underline-offset:3px}
+.card .actions{position:relative;z-index:2}
+/* Vista rápida: 4 botones en dos filas */
+.pd-actions-4{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pd-actions-4 .btn{justify-content:center}
+.pd-actions-4 .btn svg{width:18px;height:18px}
+.pd-info h3 a{color:inherit;text-decoration:none}
+.pd-info h3 a:hover{text-decoration:underline;text-underline-offset:4px}
+/* Mapa sobre la lista */
+.map-view{margin-bottom:56px}
+/* Comparador dentro de la obra destacada: ocupa todo el alto del bloque */
+.feat-obra .fo-media .ba-frame{aspect-ratio:auto;height:100%;border-radius:0}

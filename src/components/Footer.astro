@@ -1,0 +1,32 @@
+---
+import Icon from './Icon.astro';
+import { IC } from '../lib/icons';
+import { SERVICIOS, WA, TEL, TEL_TXT, MAIL, BROCHURE } from '../lib/site';
+---
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div>
+        <img src="/assets/logo-blanco.png" alt="MM High Metrik Engineers" loading="lazy">
+        <p>Servicios integrales de construcción, remodelación y mantenimiento en Lima, Perú.</p>
+        <div class="social">
+          <a href="https://www.facebook.com/share/1EMLLRL683/?mibextid=wwXIfr" target="_blank" rel="noopener" aria-label="Facebook"><Icon d={IC.fb} fill /></a>
+          <a href="https://www.instagram.com/mmhighmetrik.pe" target="_blank" rel="noopener" aria-label="Instagram"><Icon d={IC.ig} /></a>
+          <a href={`https://wa.me/${WA}`} target="_blank" rel="noopener" aria-label="WhatsApp"><Icon d={IC.wa} fill /></a>
+        </div>
+      </div>
+      <div><h4>Empresa</h4><ul><li><a href="/#nosotros">Nosotros</a></li><li><a href="/servicios/">Servicios</a></li><li><a href="/proyectos/">Proyectos</a></li><li><a href="/#contacto">Contacto</a></li><li><a href={BROCHURE} target="_blank" rel="noopener">Brochure</a></li></ul></div>
+      <div><h4>Servicios</h4><ul>{SERVICIOS.map((s) => <li><a href={`/servicios/#servicio-${s.id}`}>{s.t}</a></li>)}</ul></div>
+      <div><h4>Contacto</h4><ul><li><a href={`tel:${TEL}`}>{TEL_TXT}</a></li><li><a href={`mailto:${MAIL}`}>{MAIL}</a></li><li>Av. República de Colombia 625, Of. 501, San Isidro</li><li>Lunes a viernes, 8 a.m. a 6 p.m.</li></ul></div>
+    </div>
+    <div class="legal"><span>© {new Date().getFullYear()} MM High Metrik Engineers S.A.C. Todos los derechos reservados.</span><span><a href="https://www.mmhighmetrik.com/privacidad">Privacidad</a> &nbsp;·&nbsp; <a href="https://www.mmhighmetrik.com/terminos">Términos</a></span></div>
+  </div>
+  <div class="giant" aria-hidden="true">HIGH METRIK</div>
+</footer>
+
+<a class="wa-float" href={`https://wa.me/${WA}?text=${encodeURIComponent('Hola, quisiera cotizar un proyecto.')}`} target="_blank" rel="noopener" aria-label="Escribir por WhatsApp"><Icon d={IC.wa} fill /></a>
+<nav class="mbar" aria-label="Contacto rápido">
+  <a href={`tel:${TEL}`}><Icon d={IC.tel} />Llamar</a>
+  <a class="m-wa" href={`https://wa.me/${WA}?text=${encodeURIComponent('Hola, quisiera cotizar un proyecto.')}`} target="_blank" rel="noopener"><Icon d={IC.wa} fill />WhatsApp</a>
+  <a class="m-cot" href="/#contacto"><Icon d={IC.doc} />Cotizar</a>
+</nav>

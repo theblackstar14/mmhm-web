@@ -1,0 +1,141 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import { Picture, getImage } from 'astro:assets';
+import { IC } from '../../lib/icons';
+import { TIPOS, type TipoKey } from '../../lib/site';
+import { getObras, urlObra, waObra, fotosDe, datosCliente } from '../../lib/obras';
+
+const obras = await getObras();
+const datos = await datosCliente(obras);
+const feat = obras.find((o) => o.data.destacadaListado && o.data.portada);
+const heroSrc = obras.find((o) => o.id === 'costa-verde')?.data.portada;
+const hero = heroSrc ? await getImage({ src: heroSrc, width: 1800, format: 'webp' }) : null;
+const og = heroSrc ? (await getImage({ src: heroSrc, width: 1200, height: 630, fit: 'cover', format: 'jpg' })).src : undefined;
+const tipos = Object.entries(TIPOS).map(([k, v]) => ({ k, n: v.n, c: obras.filter((o) => o.data.tipo === k).length })).filter((t) => t.c);
+let featAntes: string | null = null, featDesp: string | null = null;
+if (feat?.data.antes && feat.data.portada) {
+  featAntes = (await getImage({ src: feat.data.antes, width: 1200, format: 'webp' })).src;
+  featDesp = (await getImage({ src: feat.data.despuesComparar ?? feat.data.portada, width: 1200, format: 'webp' })).src;
+}
+---
+<Base title="Obras realizadas | MM High Metrik Engineers" nav="proyectos" leaflet image={og}
+  description={`${obras.length} obras de construcción, defensas ribereñas, espacios públicos y edificaciones ejecutadas por MM High Metrik Engineers en Lima y Puno.`}>
+  <div class="page-hero">
+    {hero && <img src={hero.src} alt="" style="filter:grayscale(1) contrast(1.1)">}
+    <div class="wrap">
+      <p class="crumbs"><a href="/">Inicio</a> / Proyectos</p>
+      <h1>Obras realizadas</h1>
+      <div class="cota" style="color:var(--blue-2)"><i></i><span>{obras.length} obras en Lima y Puno</span><i></i></div>
+      <p>Proyectos ejecutados para entidades públicas y empresas privadas. Seleccione una obra para ver su galería, ficha técnica y ubicación.</p>
+    </div>
+  </div>
+
+  <div class="obras-bar">
+    <div class="wrap">
+      <div class="filters" id="filters" role="group" aria-label="Filtrar obras por tipo">
+        <button class="chip" data-f="todos" aria-pressed="true">Todas<span>{obras.length}</span></button>
+        {tipos.map((t) => <button class="chip" data-f={t.k} aria-pressed="false">{t.n}<span>{t.c}</span></button>)}
+      </div>
+      <div class="seg" role="group" aria-label="Forma de ver las obras">
+        <button data-view="lista" aria-pressed="true"><Icon d={IC.grid} /><span class="lbl">Lista</span></button>
+        <button data-view="mapa" aria-pressed="false"><Icon d={IC.map} /><span class="lbl">Mapa</span></button>
+      </div>
+    </div>
+  </div>
+
+  <section style="padding-top:48px" class="views">
+    <div class="wrap">
+      <div id="viewMapa" class="map-view" hidden>
+        <div class="map-head">
+          <div><h2>Mapa de obras</h2><p class="lead" style="margin-top:10px">Seleccione un punto para ver la obra. El filtro de arriba también se aplica al mapa.</p></div>
+          <div class="map-jump" role="group" aria-label="Ir a región"><button class="chip" data-jump="lima">Lima</button><button class="chip" data-jump="puno">Puno</button><button class="chip" data-jump="all">Todo el Perú</button></div>
+        </div>
+        <div class="obras-map" id="obrasMap" aria-label="Mapa de ubicación de las obras"></div>
+      </div>
+      <div id="viewLista">
+        {feat && (
+          <article class="feat-obra" data-tipo={feat.data.tipo}>
+            <div class="fo-media">
+              {featAntes && feat.data.antesAlineado ? (
+                <div class="ba-frame" style="--x:50%">
+                  <img class="ba-img" src={featAntes} alt={`${feat.data.titulo} antes de la obra`}>
+                  <div class="ba-after"><img class="ba-img" src={featDesp} alt={`${feat.data.titulo} después de la obra`}></div>
+                  <div class="ba-handle" aria-hidden="true"><span><Icon d={IC.ba} w={2.4} /></span></div>
+                  <span class="ba-tag ba-tag-l">Antes</span><span class="ba-tag ba-tag-r">Después</span>
+                  <input type="range" min="0" max="100" value="50" aria-label={`Deslice para comparar el antes y el después de ${feat.data.titulo}`}>
+                </div>
+              ) : featAntes ? (
+                <div class="cmp">
+                  <figure><img src={featAntes} alt={`${feat.data.titulo} antes de la obra`} loading="lazy"><figcaption>Antes</figcaption></figure>
+                  <figure><img src={featDesp} alt={`${feat.data.titulo} después de la obra`} loading="lazy"><figcaption>Después</figcaption></figure>
+                </div>
+              ) : (
+                <Picture src={feat.data.portada!} formats={['webp']} fallbackFormat="webp" widths={[800, 1300]} sizes="(max-width:1000px) 100vw, 58vw" alt={feat.data.titulo} />
+              )}
+            </div>
+            <div class="fo-body">
+              <small>Obra destacada · {TIPOS[feat.data.tipo].n}</small>
+              <h2>{feat.data.titulo}</h2>
+              <p>{feat.data.resumen}</p>
+              <dl class="ficha">
+                {feat.data.ubicacion && <><dt>Ubicación</dt><dd>{feat.data.ubicacion}</dd></>}
+                {feat.data.cliente && <><dt>Cliente</dt><dd>{feat.data.cliente}</dd></>}
+              </dl>
+              <div class="fo-actions">
+                <a class="btn btn-primary" href={urlObra(feat)}>Ver obra completa</a>
+                <a class="btn btn-ghost" href={waObra(feat)} target="_blank" rel="noopener">Cotizar una similar</a>
+              </div>
+            </div>
+          </article>
+        )}
+
+        <div class="grid" id="grid">
+          {obras.map((o) => {
+            const n = fotosDe(o.id).length;
+            return (
+              <article class="card" data-id={o.id} data-tipo={o.data.tipo}>
+                <div class="media">
+                  <span class="tag">{TIPOS[o.data.tipo].n}</span><span class="card-plus" aria-hidden="true"></span>
+                  {o.data.portada
+                    ? <Picture src={o.data.portada} formats={['webp']} fallbackFormat="webp" widths={[480, 800]} sizes="(max-width:640px) 100vw, (max-width:1000px) 50vw, 33vw" alt={o.data.titulo} loading="lazy" />
+                    : <div class="ph" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" set:html={TIPOS[o.data.tipo as TipoKey].i} /></div>}
+                  {(n > 1 || o.data.antes) && (
+                    <div class="badges">
+                      {n > 1 && <span><Icon d={IC.photo} />{n} fotos</span>}
+                      {o.data.antes && <span class="ba-b">Antes / después</span>}
+                    </div>
+                  )}
+                </div>
+                <div class="body">
+                  <h3><a class="card-title" href={urlObra(o)}>{o.data.titulo}</a></h3>
+                  <button class="card-open" aria-expanded="false" data-open={o.id} aria-label={`Vista rápida de ${o.data.titulo}`}></button>
+                  <p>{o.data.resumen}</p>
+                  {(o.data.ubicacion || o.data.cliente) && (
+                    <dl class="ficha">
+                      {o.data.ubicacion && <><dt>Ubicación</dt><dd>{o.data.ubicacion}</dd></>}
+                      {o.data.cliente && <><dt>Cliente</dt><dd>{o.data.cliente}</dd></>}
+                    </dl>
+                  )}
+                  <div class="actions"><a class="go-obra" href={urlObra(o)}>Ver obra completa<Icon d={IC.arrow} /></a></div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+        <p class="empty" id="emptyMsg" hidden>No hay obras en esta categoría.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="band" style="margin-top:90px">
+    <div class="wrap">
+      <h2>¿Quiere que ejecutemos su obra?</h2>
+      <a class="btn" href="/#contacto">Solicitar cotización</a>
+    </div>
+  </div>
+
+  <script type="application/json" id="obrasData" set:html={JSON.stringify(datos)} />
+  <script is:inline src="/js/proyectos.js" slot="scripts"></script>
+</Base>

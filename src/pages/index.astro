@@ -1,0 +1,191 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { Picture, getImage } from 'astro:assets';
+import { IC } from '../lib/icons';
+import { SERVICIOS, TIPOS, sico, nn, BROCHURE, TEL, TEL_TXT, MAIL, WA } from '../lib/site';
+import { getObras, urlObra, waObra } from '../lib/obras';
+
+const obras = await getObras();
+const byId = Object.fromEntries(obras.map((o) => [o.id, o]));
+const caso = byId['costa-verde'];
+const strip = obras.filter((o) => o.data.destacada && o.data.portada);
+const rimac = byId['rio-rimac-ramiro-priale'];
+const total = obras.length;
+const ETAPA_OBRAS = ['casa-hacienda', 'osinergmin', 'rio-lurin', 'rio-rimac-ramiro-priale', 'parque-canepa'];
+const obrasMin = Object.fromEntries(await Promise.all(ETAPA_OBRAS.map(async (id) => {
+  const o = byId[id];
+  return [id, { t: o.data.titulo, tipo: TIPOS[o.data.tipo].n, d: o.data.resumen, url: urlObra(o),
+    img: o.data.portada ? (await getImage({ src: o.data.portada, width: 800, format: 'webp' })).src : null }];
+})));
+const og = caso.data.portada ? (await getImage({ src: caso.data.portada, width: 1200, height: 630, fit: 'cover', format: 'jpg' })).src : undefined;
+---
+<Base title="MM High Metrik Engineers | Construcción, remodelación y mantenimiento" nav="inicio" image={og}>
+  <section class="hero" id="inicio" style="padding:0">
+    <img class="hero-img" src="/assets/hero-excavadora.jpg" alt="Excavadora trabajando sobre enrocado al atardecer" fetchpriority="high">
+    <video class="hero-video" id="heroVideo" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
+    <div class="wrap">
+      <h1>Hacemos realidad <span>su proyecto.</span></h1>
+      <p>Construcción, remodelación y mantenimiento con gestión integral: desde la ingeniería y los permisos hasta la entrega de obra.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="/proyectos/">Ver proyectos</a>
+        <a class="btn btn-ghost" href={BROCHURE} target="_blank" rel="noopener"><Icon d={IC.down} />Descargar brochure</a>
+      </div>
+      <div class="hero-facts">
+        <div><strong class="count" data-to={total} data-suffix="+">{total}+</strong><span>Obras ejecutadas para el sector público y privado</span></div>
+        <div><strong class="count" data-to={SERVICIOS.length}>{SERVICIOS.length}</strong><span>Servicios de construcción e instalaciones</span></div>
+        <div><strong class="count" data-to="2">2</strong><span>Regiones con obra: Lima y Puno</span></div>
+        <div><strong>MINAM</strong><span>Botaderos autorizados y certificados</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="nosotros">
+    <div class="wrap split">
+      <div>
+        <span class="kicker">Quiénes somos</span>
+        <h2>MM High Metrik Engineers S.A.C.</h2>
+        <div class="cota"><i></i><span>Ingeniería, gestión y obra</span><i></i></div>
+        <p class="lead" style="margin-top:22px">Somos una empresa de servicios integrales de construcción, remodelación y mantenimiento. Contamos con los recursos y la experiencia para cumplir sus requerimientos de manera oportuna y eficaz.</p>
+        <p class="lead" style="margin-top:14px">Ejecutamos cada proyecto en su totalidad: ingeniería, gestión, construcción, logística y supervisión, en coordinación constante con el cliente.</p>
+        <div class="about-list">
+          <div><b>Puntualidad</b><span>Entregamos respetando los plazos acordados.</span></div>
+          <div><b>Personal capacitado</b><span>Supervisión y ejecución con equipo calificado.</span></div>
+          <div><b>Cuidado ambiental</b><span>Botaderos autorizados con certificación MINAM.</span></div>
+          <div><b>Trámites incluidos</b><span>Autorizaciones GTU, SERPAR y MINAM.</span></div>
+        </div>
+      </div>
+      <div class="about-photos">
+        <img src="/assets/proyectos/rio-lurin.jpg" alt="Flota de excavadoras en la obra de descolmatación del Río Lurín" style="object-position:62% center" loading="lazy">
+        <figure class="duo"><img src="/assets/oficina.jpg" alt="Recepción de la oficina de MM High Metrik en San Isidro" loading="lazy"></figure>
+        <figure class="duo"><img src="/assets/proyectos/rio-rimac-ramiro-priale.jpg" alt="Excavadoras trabajando de noche en el cauce del Río Rímac" loading="lazy"></figure>
+      </div>
+    </div>
+  </section>
+
+  <div class="clients">
+    <div class="wrap">
+      <p>Han confiado en nosotros</p>
+      <ul><li>Municipalidad de Lima</li><li>PROLIMA</li><li>Osinergmin</li><li>Municipalidad de Santiago de Surco</li></ul>
+    </div>
+  </div>
+
+  <section class="case" aria-labelledby="case-t" style="padding:0">
+    <div class="case-img">{caso.data.portada && <Picture src={caso.data.portada} formats={['webp']} fallbackFormat="webp" widths={[800, 1200, 1600]} sizes="(max-width:1000px) 100vw, 55vw" alt="Personal instalando geomallas en el acantilado de la Costa Verde, con el mar al fondo" loading="lazy" />}</div>
+    <div class="case-body">
+      <span class="kicker">Obra destacada</span>
+      <h2 id="case-t">{caso.data.titulo}</h2>
+      <div class="cota"><i></i><span>Acantilado de Miraflores</span><i></i></div>
+      <p>{caso.data.resumen}</p>
+      <dl class="ficha">
+        <dt>Servicio</dt><dd>Geomallas y taludes</dd>
+        <dt>Ubicación</dt><dd>{caso.data.ubicacion}</dd>
+        {caso.data.periodo && <><dt>Año</dt><dd>{caso.data.periodo}</dd></>}
+      </dl>
+      <div class="actions">
+        <a class="btn btn-primary" href={urlObra(caso)}>Ver la obra</a>
+        <a class="btn btn-ghost" href={waObra(caso)} target="_blank" rel="noopener">Cotizar uno similar</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="strip-wrap" style="background:var(--navy)">
+    <div class="wrap">
+      <div class="proj-head" style="margin:0 0 22px;color:#fff">
+        <div><h2 style="font-size:clamp(1.6rem,3vw,2.2rem)">Más obras realizadas</h2><div class="cota" style="color:var(--blue-2)"><i></i><span>{total} obras en Lima y Puno</span><i></i></div></div>
+        <a class="btn btn-ghost" href="/proyectos/">Ver las {total} obras</a>
+      </div>
+      <div class="strip">
+        {strip.map((o) => (
+          <a class="tile" href={urlObra(o)}>
+            <Picture src={o.data.portada!} formats={['webp']} fallbackFormat="webp" widths={[500, 800]} sizes="(max-width:640px) 78vw, 25vw" alt={o.data.titulo} loading="lazy" />
+            <div class="cap"><small>{TIPOS[o.data.tipo].n}</small><h3>{o.data.titulo}</h3></div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <section class="services blueprint" id="lineas">
+    <div class="wrap">
+      <div class="proj-head" style="margin-bottom:0">
+        <div>
+          <span class="kicker">Servicios</span>
+          <h2>Soluciones integrales para su obra</h2>
+          <div class="cota"><i></i><span>{SERVICIOS.length} servicios en 4 especialidades</span><i></i></div>
+        </div>
+        <a class="btn btn-line" href="/servicios/">Ver todos los servicios</a>
+      </div>
+      <div class="svc-cards">
+        {SERVICIOS.map((s, i) => (
+          <a class="svc-card" href={`/servicios/#servicio-${s.id}`}>
+            <span class="bg" aria-hidden="true"><img src={s.img} alt="" loading="lazy"></span>
+            <span class="n">{nn(i)}</span><Fragment set:html={sico(s.ic)} /><h3>{s.t}</h3><p>{s.c}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <figure class="photo-band" style="margin:0">
+    {rimac.data.portada && <Picture src={rimac.data.portada} formats={['webp']} fallbackFormat="webp" widths={[800, 1400, 2000]} sizes="100vw" alt="Excavadoras trabajando de noche en el cauce del Río Rímac" loading="lazy" />}
+    <div class="wrap">
+      <blockquote>Cuando la obra lo exige, seguimos trabajando de noche.</blockquote>
+      <figcaption>Descolmatación del <a href={urlObra(rimac)} style="color:inherit">Río Rímac, tramo Ramiro Prialé</a></figcaption>
+    </div>
+  </figure>
+
+  <section class="process-img" id="proceso">
+    <div class="wrap">
+      <h2 class="sr">Gestión integral de proyectos de construcción</h2>
+      <figure class="proc-fig" id="procFig">
+        <div class="proc-stage" id="procStage">
+          <img class="proc-base" src="/assets/proc-base.webp" width="1585" height="992" alt="" loading="lazy">
+        </div>
+        <figcaption class="proc-hint">Pase el cursor sobre cada etapa y haga clic para ver el detalle.</figcaption>
+      </figure>
+      <ol class="proc-list" id="procList"></ol>
+    </div>
+  </section>
+
+  <section class="contact" id="contacto">
+    <div class="wrap">
+      <div class="contact-grid">
+        <div class="contact-info">
+          <h2>¿Tiene un proyecto en mente?</h2>
+          <p style="margin-top:14px;color:#B9C4D6">Cuéntenos qué necesita y le respondemos con una propuesta.</p>
+          <ul>
+            <li><Icon d={IC.pin} /><span>Av. República de Colombia 625, Of. 501<small>San Isidro, Lima</small></span></li>
+            <li><Icon d={IC.tel} /><span><a href={`tel:${TEL}`}>{TEL_TXT}</a><small>Lunes a viernes, 8 a.m. a 6 p.m.</small></span></li>
+            <li><Icon d={IC.mail} /><span><a href={`mailto:${MAIL}`}>{MAIL}</a></span></li>
+          </ul>
+          <div class="map"><iframe title="Ubicación de la oficina en San Isidro" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q=Av.%20Rep%C3%BAblica%20de%20Colombia%20625%2C%20San%20Isidro%2C%20Lima&z=16&output=embed"></iframe></div>
+        </div>
+        <form id="quoteForm" novalidate>
+          <h3>Solicite su cotización</h3>
+          <p>Al enviar se abrirá WhatsApp con su mensaje listo.</p>
+          <div class="row2">
+            <label>Nombre<input name="nombre" required autocomplete="name"></label>
+            <label>Empresa<input name="empresa" autocomplete="organization"></label>
+          </div>
+          <label>Servicio
+            <select name="servicio" id="fServicio">{SERVICIOS.map((s) => <option>{s.t}</option>)}<option>Otro</option></select>
+          </label>
+          <label>Descripción del proyecto<textarea name="mensaje" required placeholder="Ubicación, alcance aproximado y plazo"></textarea></label>
+          <button class="btn btn-primary" type="submit" style="justify-self:start">Enviar por WhatsApp</button>
+          <p class="form-note" id="formNote" role="status"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <div class="drawer-bd" id="stepBd" hidden></div>
+  <div class="drawer" id="stepDlg" role="dialog" aria-modal="true" aria-labelledby="stepTitle" hidden>
+    <button class="dr-close" id="drClose" aria-label="Cerrar"><Icon d={IC.x} w={2.2} /></button>
+    <div class="dr-hero" id="drHero"><img id="drHeroImg" alt=""></div>
+    <div class="drawer-in" id="stepBody"></div>
+  </div>
+
+  <script type="application/json" id="obrasMin" set:html={JSON.stringify(obrasMin)} />
+  <script is:inline src="/js/home.js" slot="scripts"></script>
+</Base>

@@ -1,0 +1,67 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import { IC } from '../../lib/icons';
+import { SERVICIOS, FAMILIAS, nn } from '../../lib/site';
+import { getObras, urlObra } from '../../lib/obras';
+const obras = Object.fromEntries((await getObras()).map((o) => [o.id, o]));
+---
+<Base title="Servicios | MM High Metrik Engineers" nav="servicios" description={`${SERVICIOS.length} servicios de construcción: ${SERVICIOS.map((s) => s.sh.toLowerCase()).join(", ")}.`}>
+  <div class="page-hero">
+    <img src="/assets/servicios/defensas-riberenas.jpg" alt="">
+    <div class="wrap">
+      <p class="crumbs"><a href="/">Inicio</a> / Servicios</p>
+      <h1>Servicios</h1>
+      <div class="cota" style="color:var(--blue-2)"><i></i><span>{SERVICIOS.length} servicios en {Object.keys(FAMILIAS).length} especialidades</span><i></i></div>
+      <p>Del movimiento de tierras a las instalaciones especiales, con personal propio y gestión integral del proyecto.</p>
+    </div>
+  </div>
+  <section class="svc-page">
+    <div class="wrap svc-layout">
+      <nav class="svc-index" id="svcIndex" aria-label="Índice de servicios">
+        {Object.entries(FAMILIAS).map(([f, n]) => (
+          <>
+            <h4>{n}</h4>
+            {SERVICIOS.map((s, i) => s.f === f && <a href={`#servicio-${s.id}`} data-s={s.id}><span>{nn(i)}</span><b class="lg">{s.t}</b><b class="sm">{s.sh}</b></a>)}
+          </>
+        ))}
+      </nav>
+      <div class="svc-list">
+        {SERVICIOS.map((s, i) => (
+          <article class="svc-item" id={`servicio-${s.id}`}>
+            <div class="svc-media"><img src={s.img} alt={s.t} loading="lazy"><span class="svc-num" aria-hidden="true">{nn(i)}</span></div>
+            <div class="svc-body">
+              <small>{FAMILIAS[s.f]}</small>
+              <h2>{s.t}</h2>
+              <p>{s.d}</p>
+              <div class="svc-cols">
+                <div><h4>Alcance</h4><ul class="checks">{s.a.map((x) => <li>{x}</li>)}</ul></div>
+                <div><h4>Obras relacionadas</h4><div class="chips-rel">
+                  {s.obras.filter((id) => obras[id]).map((id) => <a href={urlObra(id)}><Icon d={IC.pin} w={2.2} />{obras[id].data.titulo}</a>)}
+                </div></div>
+              </div>
+              <a class="btn btn-primary" href={`/?servicio=${encodeURIComponent(s.t)}#contacto`}>Solicitar información</a>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+  <div class="band">
+    <div class="wrap">
+      <h2>¿No encuentra el servicio que necesita?</h2>
+      <a class="btn" href="/#contacto">Cuéntenos su proyecto</a>
+    </div>
+  </div>
+  <script is:inline slot="scripts">
+  (function(){
+    if(!("IntersectionObserver" in window)) return;
+    const links=[...document.querySelectorAll("#svcIndex a")];
+    const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){
+      const id=e.target.id.replace("servicio-","");
+      links.forEach(a=>{ const on=a.dataset.s===id; a.classList.toggle("on",on); if(on && matchMedia("(max-width:1000px)").matches) a.scrollIntoView({block:"nearest",inline:"center"}); });
+    }}),{rootMargin:"-35% 0px -60% 0px"});
+    document.querySelectorAll(".svc-item").forEach(el=>io.observe(el));
+  })();
+  </script>
+</Base>

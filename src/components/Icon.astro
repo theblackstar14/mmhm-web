@@ -1,0 +1,4 @@
+---
+const { d, w = 2, fill = false, cls = '' } = Astro.props;
+---
+<svg class={cls} viewBox="0 0 24 24" fill={fill ? 'currentColor' : 'none'} stroke={fill ? 'none' : 'currentColor'} stroke-width={w} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={d} />

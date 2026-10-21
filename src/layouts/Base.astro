@@ -1,0 +1,58 @@
+---
+import '../styles/global.css';
+import '../styles/obras.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+interface Props { title: string; description?: string; image?: string; nav?: string; leaflet?: boolean; solidHeader?: boolean }
+const { solidHeader = false, title, description = 'MM High Metrik Engineers S.A.C. — servicios integrales de construcción, remodelación y mantenimiento en Lima y Puno.', image, nav, leaflet = false } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const og = new URL(image ?? '/assets/hero-excavadora.jpg', Astro.site).href;
+---
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Versión de revisión: quitar noindex al publicar en el dominio oficial -->
+<meta name="robots" content="noindex, nofollow">
+<title>{title}</title>
+<meta name="description" content={description}>
+<link rel="canonical" href={canonical}>
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_PE">
+<meta property="og:site_name" content="MM High Metrik Engineers">
+<meta property="og:title" content={title}>
+<meta property="og:description" content={description}>
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={og} />
+<meta property="og:image:alt" content={title} />
+<meta name="twitter:image" content={og} />
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/logo-blanco.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&display=swap" rel="stylesheet">
+{leaflet && <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">}
+<slot name="head" />
+<script is:inline>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+<script is:inline defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+<Header nav={nav} solid={solidHeader} />
+<main id="main">
+<slot />
+</main>
+<Footer />
+{leaflet && <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>}
+<script is:inline>
+(function(){
+  var h=document.getElementById('header'), nav=document.getElementById('nav'), b=document.getElementById('menuBtn');
+  var fixed=h.hasAttribute('data-solid'); function s(){ h.classList.toggle('solid', fixed || scrollY>40); }
+  addEventListener('scroll', s, {passive:true}); s();
+  b.addEventListener('click', function(){ var o=nav.classList.toggle('open'); b.setAttribute('aria-expanded', o); });
+  nav.addEventListener('click', function(e){ if(e.target.closest('a')){ nav.classList.remove('open'); b.setAttribute('aria-expanded','false'); } });
+})();
+</script>
+<slot name="scripts" />
+</body>
+</html>

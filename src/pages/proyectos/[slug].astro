@@ -1,0 +1,244 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import { Picture, getImage } from 'astro:assets';
+import { IC } from '../../lib/icons';
+import { TIPOS, sico, fmtLL, type TipoKey } from '../../lib/site';
+import { getObras, urlObra, waObra, fotosDe, serviciosDe, FASES, type Obra } from '../../lib/obras';
+import { recorridoDe } from '../../lib/recorrido';
+import '../../styles/obra.css';
+
+export async function getStaticPaths() {
+  const obras = await getObras();
+  return obras.map((o, i) => ({ params: { slug: o.id }, props: { obra: o, prev: obras[i - 1] ?? null, next: obras[i + 1] ?? null, todas: obras } }));
+}
+const { obra, prev, next, todas } = Astro.props as { obra: Obra; prev: Obra | null; next: Obra | null; todas: Obra[] };
+const d = obra.data;
+const tipo = TIPOS[d.tipo as TipoKey];
+const servicios = serviciosDe(obra.id);
+const wa = waObra(obra);
+
+/* ---------- Fotos: mosaico + galería en modal ---------- */
+const fotos = fotosDe(obra.id);
+if (d.portada) {
+  const i = fotos.findIndex((f) => f.img.src === d.portada!.src);
+  if (i > 0) fotos.unshift(...fotos.splice(i, 1));
+}
+const galeria = await Promise.all(fotos.map(async (f) => ({
+  src: (await getImage({ src: f.img, width: Math.min(2000, f.img.width), format: 'webp' })).src,
+  th: (await getImage({ src: f.img, width: 240, format: 'webp' })).src,
+  cap: FASES[f.fase],
+})));
+const mosaico = fotos.slice(0, 3);
+
+/* ---------- Ficha ---------- */
+const ficha = [
+  d.cliente && ['Cliente', d.cliente],
+  d.tramo ? ['Tramo', d.tramo] : d.plazo && ['Plazo', d.plazo],
+  d.ubicacion && ['Ubicación', d.ubicacion],
+  d.periodo && ['Año', d.periodo],
+].filter(Boolean) as [string, string][];
+const tags = [d.ubicacion?.split(',')[0], d.periodo].filter(Boolean) as string[];
+
+/* ---------- Antes / después ---------- */
+let antesSrc: string | null = null, despSrc: string | null = null;
+if (d.antes && d.portada) {
+  antesSrc = (await getImage({ src: d.antes, width: 1600, format: 'webp' })).src;
+  despSrc = (await getImage({ src: d.despuesComparar ?? d.portada, width: 1600, format: 'webp' })).src;
+}
+
+/* ---------- Recorrido de obra ---------- */
+const rec = await recorridoDe(obra, wa);
+
+/* ---------- Similares y SEO ---------- */
+const similares = [...todas.filter((o) => o.id !== obra.id && o.data.tipo === d.tipo && o.data.portada),
+  ...todas.filter((o) => o.id !== obra.id && o.data.tipo !== d.tipo && o.data.portada)].slice(0, 3);
+const og = d.portada ? (await getImage({ src: d.portada, width: 1200, height: 630, fit: 'cover', format: 'jpg' })).src : undefined;
+const desc = `${d.resumen}${d.ubicacion ? ` ${d.ubicacion}.` : ''} Obra ejecutada por MM High Metrik Engineers.`;
+const nFotos = galeria.length;
+---
+<Base title={`${d.titulo} | Obras | MM High Metrik Engineers`} description={desc} nav="proyectos" image={og} leaflet={!!d.coords} solidHeader>
+
+  <!-- 1. Cabecera: datos a la izquierda, mosaico de fotos a la derecha -->
+  <section class="wrap ob-top">
+    <div class="ob-head">
+      <p class="crumbs"><a href="/">Inicio</a> / <a href="/proyectos/">Proyectos</a> / {d.titulo}</p>
+      <h1>{d.titulo}</h1>
+      <div class="ob-tags"><span class="ob-tag b">{tipo.n}</span>{tags.map((t) => <span class="ob-tag">{t}</span>)}</div>
+      {d.cifras && d.cifras.length > 0 && (
+        <div class="ob-figs" style={`--n:${d.cifras.length}`}>
+          {d.cifras.map((c) => <div class="ob-fig"><strong>{c.v}{c.u && <small>{c.u}</small>}</strong><span>{c.t}</span></div>)}
+        </div>
+      )}
+      {(ficha.length > 0 || servicios.length > 0) && (
+        <dl class="ob-ficha">
+          {ficha.map(([k, v]) => <div><dt>{k}</dt><dd>{v}</dd></div>)}
+          {servicios.length > 0 && (
+            <div><dt>{servicios.length > 1 ? 'Servicios' : 'Servicio'}</dt><dd>{servicios.map((s, i) => <>{i > 0 && ', '}<a href={`/servicios/#servicio-${s.id}`}>{s.sh}</a></>)}</dd></div>
+          )}
+        </dl>
+      )}
+      <div class="ob-acts">
+        <a class="btn btn-wa" href={wa} target="_blank" rel="noopener">Cotizar una obra similar</a>
+        <button class="btn btn-ghost ob-share" id="shareBtn" type="button"><Icon d={IC.share} /><span>Compartir</span></button>
+      </div>
+    </div>
+    <div class={`ob-mosaic n${Math.max(1, mosaico.length)}`}>
+      {mosaico.length === 0 && <div class="ob-ph" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.2" set:html={tipo.i} /></div>}
+      {mosaico.map((f, i) => (
+        <figure data-i={i} tabindex="0" role="button" aria-label={`Ampliar foto ${i + 1} de ${nFotos}`}>
+          <Picture src={f.img} formats={['webp']} fallbackFormat="webp" widths={i === 0 ? [800, 1300] : [480, 800]} sizes={i === 0 ? '(max-width:980px) 100vw, 40vw' : '(max-width:980px) 50vw, 20vw'} alt={`${d.titulo}: ${FASES[f.fase].toLowerCase()}`} fetchpriority={i === 0 ? 'high' : undefined} loading={i === 0 ? 'eager' : 'lazy'} />
+        </figure>
+      ))}
+      {nFotos > 1 && <button class="ob-all" id="galOpen" type="button"><Icon d={IC.grid} />Ver las {nFotos} fotos</button>}
+    </div>
+  </section>
+
+  <!-- 2. Relato en dos columnas -->
+  <section class="wrap ob-story">
+    <div>
+      {d.reto ? <><h2>El contexto</h2><p>{d.reto}</p></> : <p class="ob-lead">{d.resumen}</p>}
+      {d.resultado && <><h2>Resultado</h2><p>{d.resultado}</p></>}
+      {d.prensa && (
+        <a class="ob-prensa" href={d.prensa.url} target="_blank" rel="noopener">
+          <small>En prensa · {d.prensa.fuente} · {d.prensa.fecha}</small>
+          <b>{d.prensa.t}</b>
+          <span>Leer la nota en el sitio de {d.prensa.fuente}<Icon d={IC.arrow} /></span>
+        </a>
+      )}
+    </div>
+    {(d.hicimos || d.solucion) && (
+      <div>
+        <h2>Lo que hicimos</h2>
+        {d.hicimos ? <ul class="ob-check">{d.hicimos.map((x) => <li>{x}</li>)}</ul> : <p>{d.solucion}</p>}
+      </div>
+    )}
+  </section>
+
+  {antesSrc && (
+    <section class="obra-ba ob-ba">
+      <div class="wrap">
+        <h2>Antes y después</h2>
+        {d.antesAlineado ? (
+          <div class="ba-frame" style="--x:50%">
+            <img class="ba-img" src={antesSrc} alt={`${d.titulo} antes de la obra`}>
+            <div class="ba-after"><img class="ba-img" src={despSrc} alt={`${d.titulo} después de la obra`}></div>
+            <div class="ba-handle" aria-hidden="true"><span><Icon d={IC.ba} w={2.4} /></span></div>
+            <span class="ba-tag ba-tag-l">Antes</span><span class="ba-tag ba-tag-r">Después</span>
+            <input type="range" min="0" max="100" value="50" aria-label={`Deslice para comparar el antes y el después de ${d.titulo}`}>
+          </div>
+        ) : (
+          <div class="cmp">
+            <figure><img src={antesSrc} alt={`${d.titulo} antes de la obra`} loading="lazy"><figcaption>Antes</figcaption></figure>
+            <figure><img src={despSrc} alt={`${d.titulo} después de la obra`} loading="lazy"><figcaption>Después</figcaption></figure>
+          </div>
+        )}
+      </div>
+    </section>
+  )}
+
+  <!-- 3. Recorrido de la obra (mismo sistema que Gestión integral) -->
+  {rec && (
+    <section class="process-img ob-ruta" id="recorrido">
+      <div class="wrap">
+        <h2 class="sr">Recorrido de la obra</h2>
+        <figure class="proc-fig" id="procFig">
+          <div class="ruta-stage" id="procStage" style={`aspect-ratio:${rec.W}/${rec.H}`}>
+            <img class="proc-base" src={rec.base} width={rec.W} height={rec.H} alt="" loading="lazy">
+            <svg class="ruta-glow" viewBox={`0 0 ${rec.W} ${rec.H}`} aria-hidden="true"><defs><filter id="rgBlur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8" /></filter></defs><path class="halo" id="gHalo" pathLength="100" /><path class="core" id="gCore" pathLength="100" /></svg>
+            <div class:list={['proc-ttl', { center: rec.ttl.center }]} style={`left:${rec.ttl.x}%;top:${rec.ttl.y}%`}><p class="k">Recorrido de la obra</p><p>{d.titulo}</p><i></i></div>
+            {rec.stat && <div class="proc-stat"><b>{rec.stat[0]}</b><span>{rec.stat[1]}</span></div>}
+            {rec.piezas.map((p, i) => (
+              <button class="pz" data-i={i} style={p.style} aria-label={`Fase ${i + 1}: ${rec!.data.fases[i].t}. Ver detalle`}><img src={p.src} alt="" loading="lazy"></button>
+            ))}
+            {rec.data.fases.map((f, i) => (
+              <div class="proc-lbl" data-i={i} style={rec!.lbl[i]}><span class="n">{i + 1}</span><b>{f.t}</b><small>{f.s}.</small></div>
+            ))}
+          </div>
+          <figcaption class="proc-hint">Haga clic en cada fase para ver el detalle.</figcaption>
+        </figure>
+        <ol class="proc-list" id="procList">
+          {rec.data.fases.map((f, i) => (
+            <li><button data-i={i}><em>0{i + 1}</em><span><b>{f.t}</b><small>{f.s}</small></span><Icon d={IC.r} /></button></li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  )}
+
+  <!-- 4. Cierre: ubicación y obras similares -->
+  <section class:list={['wrap', 'ob-close', { solo: !d.coords }]}>
+    {d.coords && (
+      <div>
+        <h2>Ubicación</h2>
+        <div class="obra-map" id="obraMap" data-lat={d.coords[0]} data-lng={d.coords[1]} data-t={d.titulo} aria-label={`Mapa de ubicación de ${d.titulo}`}></div>
+        <div class="ob-locm"><span>{fmtLL(d.coords)}</span><a href={`/proyectos/?vista=mapa&obra=${obra.id}`}>Ver en el mapa de obras<Icon d={IC.arrow} /></a></div>
+      </div>
+    )}
+    {similares.length > 0 && (
+      <div>
+        <h2>Obras similares</h2>
+        <div class="ob-sims">
+          {similares.map((o) => (
+            <a class="ob-sim" href={urlObra(o)}>
+              <Picture src={o.data.portada!} formats={['webp']} fallbackFormat="webp" widths={[240, 400]} sizes="160px" alt="" loading="lazy" />
+              <div><small>{TIPOS[o.data.tipo as TipoKey].n}</small><h3>{o.data.titulo}</h3></div>
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
+  </section>
+
+  {servicios.length > 0 && (
+    <section class="wrap ob-svc">
+      <h2>Servicios aplicados</h2>
+      <div class="svc-applied">
+        {servicios.map((s) => <a href={`/servicios/#servicio-${s.id}`}><Fragment set:html={sico(s.ic)} /><span>{s.t}</span><Icon d={IC.arrow} /></a>)}
+      </div>
+    </section>
+  )}
+
+  <nav class="obra-nav" aria-label="Otras obras">
+    {prev ? <a class="prev" href={urlObra(prev)}><small><Icon d={IC.l} />Obra anterior</small><b>{prev.data.titulo}</b></a> : <span></span>}
+    {next ? <a class="next" href={urlObra(next)}><small>Obra siguiente<Icon d={IC.r} /></small><b>{next.data.titulo}</b></a> : <span></span>}
+  </nav>
+
+  <div class="band obra-cta">
+    <div class="wrap">
+      <h2>¿Necesita una obra como esta?</h2>
+      <div class="acts"><a class="btn" href={wa} target="_blank" rel="noopener">Cotizar una obra similar</a></div>
+    </div>
+  </div>
+
+  <!-- Galería en modal -->
+  {nFotos > 0 && (
+    <div class="gal" id="gal" role="dialog" aria-modal="true" aria-label={`Fotos de ${d.titulo}`} hidden>
+      <div class="gal-box">
+        <div class="gal-top"><span class="gal-count" id="galCount"></span><button class="gal-x" id="galClose" aria-label="Cerrar galería"><Icon d={IC.x} w={2.2} /></button></div>
+        <div class="gal-stage">
+          <img id="galImg" alt="">
+          {nFotos > 1 && <><button class="gal-nav gal-prev" id="galPrev" aria-label="Foto anterior"><Icon d={IC.l} w={2.2} /></button><button class="gal-nav gal-next" id="galNext" aria-label="Foto siguiente"><Icon d={IC.r} w={2.2} /></button></>}
+        </div>
+        <p class="gal-cap" id="galCap"></p>
+        {nFotos > 1 && <div class="gal-thumbs" id="galThumbs">{galeria.map((g, i) => <button data-i={i} aria-label={`Ver foto ${i + 1}`}><img src={g.th} alt="" loading="lazy"></button>)}</div>}
+      </div>
+    </div>
+  )}
+
+  <!-- Panel de fase del recorrido -->
+  {rec && (
+    <>
+      <div class="drawer-bd" id="stepBd" hidden></div>
+      <div class="drawer" id="stepDlg" role="dialog" aria-modal="true" aria-labelledby="stepTitle" hidden>
+        <button class="dr-close" id="drClose" aria-label="Cerrar"><Icon d={IC.x} w={2.2} /></button>
+        <div class="dr-hero" id="drHero"><img id="drHeroImg" alt=""></div>
+        <div class="drawer-in" id="stepBody"></div>
+      </div>
+    </>
+  )}
+
+  <script is:inline type="application/json" id="galData" set:html={JSON.stringify(galeria.map((g) => [g.src, `${g.cap} · ${d.titulo}`]))} />
+  {rec && <script is:inline type="application/json" id="rutaData" set:html={JSON.stringify(rec.data)} />}
+  <script is:inline src="/js/obra.js" slot="scripts"></script>
+</Base>

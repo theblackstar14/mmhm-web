@@ -1,0 +1,19 @@
+---
+import Icon from './Icon.astro';
+import { IC } from '../lib/icons';
+const { nav = '', solid = false } = Astro.props;
+const links = [
+  ['inicio', '/', 'Inicio'], ['nosotros', '/#nosotros', 'Nosotros'], ['servicios', '/servicios/', 'Servicios'],
+  ['proyectos', '/proyectos/', 'Proyectos'], ['contacto', '/#contacto', 'Contacto'],
+];
+---
+<header class:list={["header", { solid }]} id="header" data-solid={solid ? "" : undefined}>
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="MM High Metrik Engineers, inicio"><img src="/assets/mm-mark.png" alt="" width="160" height="78"><span class="brand-txt"><b>HIGH METRIK</b><small>ENGINEERS S.A.C.</small></span></a>
+    <button class="menu-btn" id="menuBtn" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav"><Icon d={IC.menu} /></button>
+    <nav class="nav" id="nav" aria-label="Principal">
+      {links.map(([k, href, txt]) => <a href={href} class={nav === k ? 'active' : undefined} aria-current={nav === k ? 'page' : undefined}>{txt}</a>)}
+      <a class="btn btn-primary" href="/#contacto">Solicitar cotización</a>
+    </nav>
+  </div>
+</header>
