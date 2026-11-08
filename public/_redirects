@@ -1,0 +1,12 @@
+# Redirecciones de las URL del sitio antiguo a las del sitio nuevo (Cloudflare).
+# Este archivo se publica con el sitio y las aplica Cloudflare, no el código del Worker.
+#
+# [PENDIENTE: lista de URL antiguas. La entrega la empresa.]
+#
+# Formato, una por línea y sin el # inicial:
+#   /ruta-antigua/ /ruta-nueva/ 301
+#
+# - Use 301 para los cambios definitivos.
+# - Se aplica la primera regla que coincida.
+# - No admite condiciones por parámetros de URL ni por dominio.
+# - La redirección de mmhighmetrik.com a www va en una regla del dominio. Ver docs/DESPLIEGUE.md.

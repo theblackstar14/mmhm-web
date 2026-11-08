@@ -1,0 +1,36 @@
+---
+// Layout de páginas legales: hero del sitio + índice de secciones + texto en Markdown.
+import { getEntry, render } from 'astro:content';
+import Base from './Base.astro';
+interface Props { id: 'privacidad' | 'terminos'; description: string }
+const { id, description } = Astro.props;
+const doc = await getEntry('legal', id);
+if (!doc) throw new Error(`Falta src/content/legal/${id}.md`);
+const { Content, headings } = await render(doc);
+const { titulo, actualizado } = doc.data;
+const secciones = headings.filter((h) => h.depth === 2);
+const fecha = actualizado.toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+const iso = actualizado.toISOString().slice(0, 10);
+---
+<Base title={`${titulo} | MM High Metrik Engineers`} description={description}>
+  <div class="page-hero doc-hero">
+    <div class="wrap">
+      <p class="crumbs"><a href="/">Inicio</a> / {titulo}</p>
+      <h1>{titulo}</h1>
+      <p>Última actualización: <time datetime={iso}>{fecha}</time></p>
+    </div>
+  </div>
+  <section class="doc-page">
+    <div class="wrap doc-layout">
+      {secciones.length > 0 && (
+        <nav class="doc-toc" aria-label="Contenido de la página">
+          <h2>Contenido</h2>
+          <ol>{secciones.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol>
+        </nav>
+      )}
+      <article class="doc-body">
+        <Content />
+      </article>
+    </div>
+  </section>
+</Base>

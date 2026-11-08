@@ -196,3 +196,5 @@
 .map-view{margin-bottom:56px}
 /* Comparador dentro de la obra destacada: ocupa todo el alto del bloque */
 .feat-obra .fo-media .ba-frame{aspect-ratio:auto;height:100%;border-radius:0}
+/* Móvil: los botones de la vista rápida no ensanchan el panel */
+@media (max-width:767px){.pd-actions-4{grid-template-columns:repeat(2,minmax(0,1fr))}}

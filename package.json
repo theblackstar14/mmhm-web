@@ -3,6 +3,22 @@
   "type": "module",
   "version": "1.0.0",
   "private": true,
-  "scripts": { "dev": "astro dev", "build": "astro build", "preview": "astro preview" },
-  "dependencies": { "astro": "5.18.2", "sharp": "^0.34.0" }
+  "scripts": {
+    "dev": "astro dev",
+    "dev:panel": "astro dev --mode github --port 4321 --strictPort",
+    "build": "astro build",
+    "build:panel": "astro build --mode github",
+    "preview": "node -e \"console.error('npm run preview no funciona con el adaptador de Cloudflare. Para medir, siga el metodo de docs/linea-base.md.');process.exit(1)\""
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "12.6.13",
+    "@astrojs/react": "4.4.2",
+    "@astrojs/sitemap": "3.7.4",
+    "@keystatic/astro": "6.0.0",
+    "@keystatic/core": "0.6.9",
+    "astro": "5.18.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "sharp": "^0.34.0"
+  }
 }

@@ -47,8 +47,10 @@ function setVista(v){
   document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.view===vista));
   /* El mapa aparece arriba; la lista de obras sigue visible debajo. */
   $("#viewMapa").hidden = vista!=="mapa";
-  if(vista==="mapa"){ initMap(); requestAnimationFrame(()=>{ map && map.invalidateSize(); syncMap(false); }); }
   setParam("vista", vista==="mapa" ? "mapa" : null);
+  /* La promesa termina con el mapa ya encuadrado. */
+  if(vista!=="mapa") return Promise.resolve();
+  return initMap().then(()=>new Promise(fin=>requestAnimationFrame(()=>{ map && map.invalidateSize(); syncMap(false); fin(); })));
 }
 document.querySelector(".seg").addEventListener("click", e => { const b=e.target.closest("button[data-view]"); if(b) setVista(b.dataset.view); });
 
@@ -180,7 +182,7 @@ gridEl.addEventListener("click", async e=>{
   if(a==="close") closeProject();
   else if(a==="prev"&&i>0) openProject(L[i-1].id);
   else if(a==="next"&&i<L.length-1) openProject(L[i+1].id);
-  else if(a==="map"){ const id=PD.id; setVista("mapa"); setTimeout(()=>focusProject(id),250); }
+  else if(a==="map"){ const id=PD.id; setVista("mapa").then(()=>setTimeout(()=>focusProject(id),250)); }
   else if(a==="share"){
     const p=BY[PD.id], url=location.origin+p.url;
     if(navigator.share){ try{ await navigator.share({title:`${p.t} · MM High Metrik`, text:p.d, url}); }catch(_){} }
@@ -191,15 +193,16 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape" && PD.id) closeProj
 let rzT; addEventListener("resize",()=>{ clearTimeout(rzT); rzT=setTimeout(()=>{ if(PD.id){ const id=PD.id; gridEl.querySelector(".pd")?.remove(); PD.id=null; openProject(id,{instant:true}); } },250); });
 
 /* ---------- Mapa ---------- */
-let map, markers={};
+let map, mapaListo, markers={};
 const OFICINA={t:"Oficina MM High Metrik", ll:[-12.0942,-77.0392], u:"Av. República de Colombia 625, San Isidro"};
 function popHtml(p){
   const media = p.card ? `<img src="${p.card}" alt="">` : `<div class="pop-ph ph"></div>`;
   return `<div class="pop">${media}<div class="t"><small>${TIPN[p.tipo]}</small><h4>${esc(p.t)}</h4><p>${esc(p.u||"")}</p><a class="pop-open" href="${p.url}">Ver obra</a></div></div>`;
 }
 function initMap(){
-  if(map) return;
-  if(!window.L){ $("#obrasMap").innerHTML='<p class="empty" style="margin:40px">No se pudo cargar el mapa. Revise su conexión.</p>'; return; }
+  return mapaListo || (mapaListo = cargarLeaflet().then(crearMapa).catch(()=>{ $("#obrasMap").innerHTML='<p class="empty" style="margin:40px">No se pudo cargar el mapa. Revise su conexión.</p>'; }));
+}
+function crearMapa(){
   map=L.map("obrasMap",{scrollWheelZoom:false});
   L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Imágenes &copy; Esri"}).addTo(map);
   L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,opacity:.85}).addTo(map);
@@ -238,5 +241,5 @@ document.querySelector(".map-jump").addEventListener("click",e=>{
 /* ---------- Estado inicial desde la URL (?tipo=, ?vista=mapa, ?obra=) ---------- */
 const q=new URLSearchParams(location.search);
 if(q.get("tipo")) setFiltro(q.get("tipo"),{silent:true});
-if(q.get("vista")==="mapa"){ setVista("mapa"); const o=q.get("obra"); if(o && BY[o]) setTimeout(()=>focusProject(o),400); }
+if(q.get("vista")==="mapa"){ const o=q.get("obra"); setVista("mapa").then(()=>{ if(o && BY[o]) setTimeout(()=>focusProject(o),400); }); }
 })();

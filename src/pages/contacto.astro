@@ -1,0 +1,58 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { IC } from '../lib/icons';
+import { SERVICIOS, WA, waUrl, TEL, TEL_TXT, MAIL, DIRECCION, DISTRITO, DIR_MAPA, HORARIO, FACEBOOK, INSTAGRAM } from '../lib/site';
+
+const destino = encodeURIComponent(DIR_MAPA);
+---
+<Base title="Contacto | MM High Metrik Engineers" nav="contacto" description="Solicite su cotización a MM High Metrik Engineers S.A.C. Teléfono, correo, WhatsApp y dirección de nuestra oficina en San Isidro, Lima.">
+  <div class="page-hero">
+    <img src="/assets/hero-excavadora.jpg" alt="">
+    <div class="wrap">
+      <p class="crumbs"><a href="/">Inicio</a> / Contacto</p>
+      <h1>Contacto</h1>
+      <div class="cota" style="color:var(--blue-2)"><i></i><span>Ingeniería, gestión y obra</span><i></i></div>
+      <p>Cuéntenos qué necesita y le respondemos con una propuesta.</p>
+    </div>
+  </div>
+
+  <section class="contact">
+    <div class="wrap">
+      <div class="contact-grid">
+        <div class="contact-info">
+          <h2>Datos de contacto</h2>
+          <ul>
+            <li><Icon d={IC.pin} /><span>{DIRECCION}<small>{DISTRITO}, Lima</small></span></li>
+            <li><Icon d={IC.tel} /><span><a href={`tel:${TEL}`}>{TEL_TXT}</a><small>{HORARIO}</small></span></li>
+            <li><Icon d={IC.mail} /><span><a href={`mailto:${MAIL}`}>{MAIL}</a></span></li>
+          </ul>
+          <h3 class="contact-canales">WhatsApp y redes</h3>
+          <div class="social">
+            <a href={waUrl('Hola, quisiera cotizar un proyecto.')} target="_blank" rel="noopener" aria-label="WhatsApp"><Icon d={IC.wa} fill /></a>
+            <a href={FACEBOOK} target="_blank" rel="noopener" aria-label="Facebook"><Icon d={IC.fb} fill /></a>
+            <a href={INSTAGRAM} target="_blank" rel="noopener" aria-label="Instagram"><Icon d={IC.ig} /></a>
+          </div>
+          <div class="map"><iframe title="Ubicación de la oficina en San Isidro" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src={`https://maps.google.com/maps?q=${destino}&z=16&output=embed`}></iframe></div>
+          <a class="btn btn-ghost contact-llegar" href={`https://www.google.com/maps/dir/?api=1&destination=${destino}`} target="_blank" rel="noopener"><Icon d={IC.pin} />Cómo llegar</a>
+        </div>
+        <form id="quoteForm" data-wa={WA} novalidate>
+          <h3>Solicite su cotización</h3>
+          <p>Al enviar se abrirá WhatsApp con su mensaje listo.</p>
+          <div class="row2">
+            <label>Nombre<input name="nombre" required autocomplete="name"></label>
+            <label>Empresa<input name="empresa" autocomplete="organization"></label>
+          </div>
+          <label>Servicio
+            <select name="servicio" id="fServicio">{SERVICIOS.map((s) => <option>{s.t}</option>)}<option>Otro</option></select>
+          </label>
+          <label>Descripción del proyecto<textarea name="mensaje" required placeholder="Ubicación, alcance aproximado y plazo"></textarea></label>
+          <button class="btn btn-primary" type="submit" style="justify-self:start">Enviar por WhatsApp</button>
+          <p class="form-note" id="formNote" role="status"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <script is:inline src="/js/contacto.js" slot="scripts"></script>
+</Base>

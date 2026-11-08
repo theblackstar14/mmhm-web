@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mmhm-p.vercel.app/sitemap-index.xml

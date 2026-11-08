@@ -1,26 +1,49 @@
 ---
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
-import { Picture, getImage } from 'astro:assets';
+import Clientes from '../components/Clientes.astro';
+import { Image, Picture, getImage } from 'astro:assets';
 import { IC } from '../lib/icons';
-import { SERVICIOS, TIPOS, sico, nn, BROCHURE, TEL, TEL_TXT, MAIL, WA } from '../lib/site';
-import { getObras, urlObra, waObra } from '../lib/obras';
+import { SERVICIOS, TIPOS, sico, nn, BROCHURE, MAX_OBRAS_FRANJA, EMPRESA, DIRECCION, DISTRITO, TEL, MAIL, FACEBOOK, INSTAGRAM } from '../lib/site';
+import { getObras, urlObra, waObra, serviciosDe } from '../lib/obras';
+import { imagenSitio } from '../lib/imagenes';
 
 const obras = await getObras();
 const byId = Object.fromEntries(obras.map((o) => [o.id, o]));
-const caso = byId['costa-verde'];
-const strip = obras.filter((o) => o.data.destacada && o.data.portada);
+/* Obra grande: la marcada con destacadaInicio; si no hay, la primera con destacada y portada. Sin ninguna, se omite. */
+const caso = obras.find((o) => o.data.destacadaInicio) ?? obras.find((o) => o.data.destacada && o.data.portada);
+/* Textos escritos a mano para una obra concreta; cualquier otra usa sus propios datos. */
+const TEXTOS_CASO: Record<string, { alt: string; cota: string; servicio: string }> = {
+  'costa-verde': { alt: 'Personal instalando geomallas en el acantilado de la Costa Verde, con el mar al fondo', cota: 'Acantilado de Miraflores', servicio: 'Geomallas y taludes' },
+};
+const textoCaso = caso && (TEXTOS_CASO[caso.id] ?? { alt: caso.data.titulo, cota: caso.data.ubicacion, servicio: serviciosDe(caso)[0]?.t });
+const strip = obras.filter((o) => o.data.destacada && o.data.portada && o.id !== caso?.id).slice(0, MAX_OBRAS_FRANJA);
 const rimac = byId['rio-rimac-ramiro-priale'];
 const total = obras.length;
 const ETAPA_OBRAS = ['casa-hacienda', 'osinergmin', 'rio-lurin', 'rio-rimac-ramiro-priale', 'parque-canepa'];
-const obrasMin = Object.fromEntries(await Promise.all(ETAPA_OBRAS.map(async (id) => {
+/* Una obra oculta no rompe el proceso: home.js omite el ejemplo si falta. */
+const obrasMin = Object.fromEntries(await Promise.all(ETAPA_OBRAS.filter((id) => byId[id]).map(async (id) => {
   const o = byId[id];
   return [id, { t: o.data.titulo, tipo: TIPOS[o.data.tipo].n, d: o.data.resumen, url: urlObra(o),
     img: o.data.portada ? (await getImage({ src: o.data.portada, width: 800, format: 'webp' })).src : null }];
 })));
-const og = caso.data.portada ? (await getImage({ src: caso.data.portada, width: 1200, height: 630, fit: 'cover', format: 'jpg' })).src : undefined;
+const og = caso?.data.portada ? (await getImage({ src: caso.data.portada, width: 1200, height: 630, fit: 'cover', format: 'jpg' })).src : undefined;
+// Solo datos de site.ts: no agregar otros sin confirmarlos con la empresa.
+const organizacion = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: EMPRESA,
+  url: Astro.site?.href,
+  telephone: TEL,
+  email: MAIL,
+  address: { '@type': 'PostalAddress', streetAddress: DIRECCION, addressLocality: DISTRITO },
+  sameAs: [FACEBOOK, INSTAGRAM],
+};
 ---
 <Base title="MM High Metrik Engineers | Construcción, remodelación y mantenimiento" nav="inicio" image={og}>
+  {/* Enlaces antiguos: /#contacto y /?servicio=...#contacto */}
+  <script is:inline slot="head">if(location.hash==="#contacto")location.replace("/contacto/"+location.search);</script>
+  <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(organizacion)}></script>
   <section class="hero" id="inicio" style="padding:0">
     <img class="hero-img" src="/assets/hero-excavadora.jpg" alt="Excavadora trabajando sobre enrocado al atardecer" fetchpriority="high">
     <video class="hero-video" id="heroVideo" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
@@ -47,47 +70,43 @@ const og = caso.data.portada ? (await getImage({ src: caso.data.portada, width: 
         <h2>MM High Metrik Engineers S.A.C.</h2>
         <div class="cota"><i></i><span>Ingeniería, gestión y obra</span><i></i></div>
         <p class="lead" style="margin-top:22px">Somos una empresa de servicios integrales de construcción, remodelación y mantenimiento. Contamos con los recursos y la experiencia para cumplir sus requerimientos de manera oportuna y eficaz.</p>
-        <p class="lead" style="margin-top:14px">Ejecutamos cada proyecto en su totalidad: ingeniería, gestión, construcción, logística y supervisión, en coordinación constante con el cliente.</p>
-        <div class="about-list">
-          <div><b>Puntualidad</b><span>Entregamos respetando los plazos acordados.</span></div>
-          <div><b>Personal capacitado</b><span>Supervisión y ejecución con equipo calificado.</span></div>
-          <div><b>Cuidado ambiental</b><span>Botaderos autorizados con certificación MINAM.</span></div>
-          <div><b>Trámites incluidos</b><span>Autorizaciones GTU, SERPAR y MINAM.</span></div>
+        <ul class="about-pts">
+          <li><b>Obra pública</b><span>Plazas, riberas y edificios para municipalidades y entidades del Estado.</span></li>
+          <li><b>Equipo propio</b><span>Personal y maquinaria nuestros en cada frente de obra.</span></li>
+          <li><b>Gestión integral</b><span>Del expediente a la entrega, con trámites incluidos.</span></li>
+        </ul>
+        <a class="btn btn-line" href="/nosotros/" style="margin-top:30px">Conocer más</a>
+      </div>
+      <div class="about-photos about-cap">
+        <figure><Image src={imagenSitio('nosotros/plaza-bolognesi-aerea.jpg')} widths={[480, 800, 1200]} sizes="(max-width:1000px) 56vw, 330px" format="webp" alt="Vista aérea de la Plaza Bolognesi renovada" loading="lazy" /><figcaption><b>Plaza Bolognesi</b>Obra terminada · Cercado de Lima</figcaption></figure>
+        <figure><Image src={imagenSitio('nosotros/equipo-obra.jpg')} widths={[320, 480, 800]} sizes="(max-width:1000px) 44vw, 260px" format="webp" alt="Ingenieros de MM High Metrik supervisando en obra" style="object-position:62% 30%" loading="lazy" /><figcaption><b>Nuestro equipo</b>Supervisión en obra</figcaption></figure>
+        <figure><Image src={imagenSitio('nosotros/equipo-propio.jpg')} widths={[320, 480, 800]} sizes="(max-width:1000px) 44vw, 260px" format="webp" alt="Excavadoras y cargador frontal de MM High Metrik en obra" loading="lazy" /><figcaption><b>Maquinaria propia</b>Excavadoras y cargador frontal</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <Clientes />
+
+  {caso && textoCaso && (
+    <section class="case" aria-labelledby="case-t" style="padding:0">
+      <div class="case-img">{caso.data.portada && <Picture src={caso.data.portada} formats={['webp']} fallbackFormat="webp" widths={[480, 640, 800, 1200, 1600]} sizes="(max-width:1000px) 100vw, 55vw" alt={textoCaso.alt} loading="lazy" />}</div>
+      <div class="case-body">
+        <span class="kicker">Obra destacada</span>
+        <h2 id="case-t">{caso.data.titulo}</h2>
+        {textoCaso.cota && <div class="cota"><i></i><span>{textoCaso.cota}</span><i></i></div>}
+        <p>{caso.data.resumen}</p>
+        <dl class="ficha">
+          {textoCaso.servicio && <><dt>Servicio</dt><dd>{textoCaso.servicio}</dd></>}
+          {caso.data.ubicacion && <><dt>Ubicación</dt><dd>{caso.data.ubicacion}</dd></>}
+          {caso.data.periodo && <><dt>Año</dt><dd>{caso.data.periodo}</dd></>}
+        </dl>
+        <div class="actions">
+          <a class="btn btn-primary" href={urlObra(caso)}>Ver la obra</a>
+          <a class="btn btn-ghost" href={waObra(caso)} target="_blank" rel="noopener">Cotizar uno similar</a>
         </div>
       </div>
-      <div class="about-photos">
-        <img src="/assets/proyectos/rio-lurin.jpg" alt="Flota de excavadoras en la obra de descolmatación del Río Lurín" style="object-position:62% center" loading="lazy">
-        <figure class="duo"><img src="/assets/oficina.jpg" alt="Recepción de la oficina de MM High Metrik en San Isidro" loading="lazy"></figure>
-        <figure class="duo"><img src="/assets/proyectos/rio-rimac-ramiro-priale.jpg" alt="Excavadoras trabajando de noche en el cauce del Río Rímac" loading="lazy"></figure>
-      </div>
-    </div>
-  </section>
-
-  <div class="clients">
-    <div class="wrap">
-      <p>Han confiado en nosotros</p>
-      <ul><li>Municipalidad de Lima</li><li>PROLIMA</li><li>Osinergmin</li><li>Municipalidad de Santiago de Surco</li></ul>
-    </div>
-  </div>
-
-  <section class="case" aria-labelledby="case-t" style="padding:0">
-    <div class="case-img">{caso.data.portada && <Picture src={caso.data.portada} formats={['webp']} fallbackFormat="webp" widths={[800, 1200, 1600]} sizes="(max-width:1000px) 100vw, 55vw" alt="Personal instalando geomallas en el acantilado de la Costa Verde, con el mar al fondo" loading="lazy" />}</div>
-    <div class="case-body">
-      <span class="kicker">Obra destacada</span>
-      <h2 id="case-t">{caso.data.titulo}</h2>
-      <div class="cota"><i></i><span>Acantilado de Miraflores</span><i></i></div>
-      <p>{caso.data.resumen}</p>
-      <dl class="ficha">
-        <dt>Servicio</dt><dd>Geomallas y taludes</dd>
-        <dt>Ubicación</dt><dd>{caso.data.ubicacion}</dd>
-        {caso.data.periodo && <><dt>Año</dt><dd>{caso.data.periodo}</dd></>}
-      </dl>
-      <div class="actions">
-        <a class="btn btn-primary" href={urlObra(caso)}>Ver la obra</a>
-        <a class="btn btn-ghost" href={waObra(caso)} target="_blank" rel="noopener">Cotizar uno similar</a>
-      </div>
-    </div>
-  </section>
+    </section>
+  )}
 
   <div class="strip-wrap" style="background:var(--navy)">
     <div class="wrap">
@@ -98,7 +117,7 @@ const og = caso.data.portada ? (await getImage({ src: caso.data.portada, width: 
       <div class="strip">
         {strip.map((o) => (
           <a class="tile" href={urlObra(o)}>
-            <Picture src={o.data.portada!} formats={['webp']} fallbackFormat="webp" widths={[500, 800]} sizes="(max-width:640px) 78vw, 25vw" alt={o.data.titulo} loading="lazy" />
+            <Picture src={o.data.portada!} formats={['webp']} fallbackFormat="webp" widths={[320, 500, 640, 800]} sizes="(max-width:640px) 78vw, (max-width:1000px) 100vw, 25vw" alt={o.data.titulo} loading="lazy" />
             <div class="cap"><small>{TIPOS[o.data.tipo].n}</small><h3>{o.data.titulo}</h3></div>
           </a>
         ))}
@@ -116,24 +135,35 @@ const og = caso.data.portada ? (await getImage({ src: caso.data.portada, width: 
         </div>
         <a class="btn btn-line" href="/servicios/">Ver todos los servicios</a>
       </div>
-      <div class="svc-cards">
-        {SERVICIOS.map((s, i) => (
-          <a class="svc-card" href={`/servicios/#servicio-${s.id}`}>
-            <span class="bg" aria-hidden="true"><img src={s.img} alt="" loading="lazy"></span>
-            <span class="n">{nn(i)}</span><Fragment set:html={sico(s.ic)} /><h3>{s.t}</h3><p>{s.c}</p>
-          </a>
-        ))}
+      <div class="svc-car" role="region" aria-roledescription="carrusel" aria-label="Servicios">
+        <div class="svc-cards" id="svcTrack">
+          {SERVICIOS.map((s, i) => (
+            <a class="svc-card" href={`/servicios/#servicio-${s.id}`}>
+              <span class="bg" aria-hidden="true"><Image src={imagenSitio(s.img)} widths={[320, 480, 640]} sizes="(max-width:640px) 84vw, (max-width:1000px) 50vw, 340px" format="webp" alt="" loading="lazy" /></span>
+              <span class="n">{nn(i)}</span><Fragment set:html={sico(s.ic)} /><h3>{s.t}</h3><p>{s.c}</p>
+            </a>
+          ))}
+        </div>
+        <div class="svc-ctrl">
+          <p class="svc-count" aria-live="polite"><span class="sr">Servicio </span><b id="svcNow">01</b><span aria-hidden="true"> / </span><span class="sr"> de </span>{nn(SERVICIOS.length - 1)}</p>
+          <div class="svc-arrows">
+            <button class="svc-nav" id="svcPrev" type="button" aria-controls="svcTrack" aria-label="Servicios anteriores" aria-disabled="true"><Icon d={IC.l} w={2.2} /></button>
+            <button class="svc-nav" id="svcNext" type="button" aria-controls="svcTrack" aria-label="Servicios siguientes"><Icon d={IC.r} w={2.2} /></button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <figure class="photo-band" style="margin:0">
-    {rimac.data.portada && <Picture src={rimac.data.portada} formats={['webp']} fallbackFormat="webp" widths={[800, 1400, 2000]} sizes="100vw" alt="Excavadoras trabajando de noche en el cauce del Río Rímac" loading="lazy" />}
-    <div class="wrap">
-      <blockquote>Cuando la obra lo exige, seguimos trabajando de noche.</blockquote>
-      <figcaption>Descolmatación del <a href={urlObra(rimac)} style="color:inherit">Río Rímac, tramo Ramiro Prialé</a></figcaption>
-    </div>
-  </figure>
+  {rimac && (
+    <figure class="photo-band" style="margin:0">
+      {rimac.data.portada && <Picture src={rimac.data.portada} formats={['webp']} fallbackFormat="webp" widths={[800, 1400, 2000]} sizes="100vw" alt="Excavadoras trabajando de noche en el cauce del Río Rímac" loading="lazy" />}
+      <div class="wrap">
+        <blockquote>Cuando la obra lo exige, seguimos trabajando de noche.</blockquote>
+        <figcaption>Descolmatación del <a href={urlObra(rimac)} style="color:inherit">Río Rímac, tramo Ramiro Prialé</a></figcaption>
+      </div>
+    </figure>
+  )}
 
   <section class="process-img" id="proceso">
     <div class="wrap">
@@ -148,36 +178,12 @@ const og = caso.data.portada ? (await getImage({ src: caso.data.portada, width: 
     </div>
   </section>
 
-  <section class="contact" id="contacto">
+  <div class="band">
     <div class="wrap">
-      <div class="contact-grid">
-        <div class="contact-info">
-          <h2>¿Tiene un proyecto en mente?</h2>
-          <p style="margin-top:14px;color:#B9C4D6">Cuéntenos qué necesita y le respondemos con una propuesta.</p>
-          <ul>
-            <li><Icon d={IC.pin} /><span>Av. República de Colombia 625, Of. 501<small>San Isidro, Lima</small></span></li>
-            <li><Icon d={IC.tel} /><span><a href={`tel:${TEL}`}>{TEL_TXT}</a><small>Lunes a viernes, 8 a.m. a 6 p.m.</small></span></li>
-            <li><Icon d={IC.mail} /><span><a href={`mailto:${MAIL}`}>{MAIL}</a></span></li>
-          </ul>
-          <div class="map"><iframe title="Ubicación de la oficina en San Isidro" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q=Av.%20Rep%C3%BAblica%20de%20Colombia%20625%2C%20San%20Isidro%2C%20Lima&z=16&output=embed"></iframe></div>
-        </div>
-        <form id="quoteForm" novalidate>
-          <h3>Solicite su cotización</h3>
-          <p>Al enviar se abrirá WhatsApp con su mensaje listo.</p>
-          <div class="row2">
-            <label>Nombre<input name="nombre" required autocomplete="name"></label>
-            <label>Empresa<input name="empresa" autocomplete="organization"></label>
-          </div>
-          <label>Servicio
-            <select name="servicio" id="fServicio">{SERVICIOS.map((s) => <option>{s.t}</option>)}<option>Otro</option></select>
-          </label>
-          <label>Descripción del proyecto<textarea name="mensaje" required placeholder="Ubicación, alcance aproximado y plazo"></textarea></label>
-          <button class="btn btn-primary" type="submit" style="justify-self:start">Enviar por WhatsApp</button>
-          <p class="form-note" id="formNote" role="status"></p>
-        </form>
-      </div>
+      <h2>¿Tiene un proyecto en mente?</h2>
+      <a class="btn" href="/contacto/">Cotizar</a>
     </div>
-  </section>
+  </div>
 
   <div class="drawer-bd" id="stepBd" hidden></div>
   <div class="drawer" id="stepDlg" role="dialog" aria-modal="true" aria-labelledby="stepTitle" hidden>

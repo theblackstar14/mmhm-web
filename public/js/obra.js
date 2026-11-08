@@ -154,14 +154,13 @@ if(R && fig){
 /* ---------- Mapa de ubicación ---------- */
 const m=$("obraMap");
 if(m){
-  const start=()=>{
-    if(!window.L){ m.innerHTML='<p class="empty" style="margin:30px">No se pudo cargar el mapa.</p>'; return; }
+  const start=()=>cargarLeaflet().then(()=>{
     const ll=[+m.dataset.lat, +m.dataset.lng];
     const map=L.map(m,{scrollWheelZoom:false,zoomControl:true}).setView(ll,15);
     L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Imágenes &copy; Esri"}).addTo(map);
     L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,opacity:.85}).addTo(map);
     L.marker(ll,{icon:L.divIcon({className:"",html:'<div class="pin active"></div>',iconSize:[22,22],iconAnchor:[11,11]}),title:m.dataset.t}).addTo(map);
-  };
+  }).catch(()=>{ m.innerHTML='<p class="empty" style="margin:30px">No se pudo cargar el mapa.</p>'; });
   if("IntersectionObserver" in window){ const io=new IntersectionObserver(es=>{ if(es[0].isIntersecting){ io.disconnect(); start(); } },{rootMargin:"300px"}); io.observe(m); }
   else start();
 }

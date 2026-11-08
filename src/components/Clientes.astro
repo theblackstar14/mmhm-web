@@ -1,0 +1,43 @@
+---
+// Franja de clientes con logo y respaldo en texto si falta el archivo.
+import fs from 'node:fs';
+import path from 'node:path';
+import sharp from 'sharp';
+import { CLIENTES, type Cliente } from '../lib/site';
+
+interface Props { titulo?: string; clientes?: Cliente[] }
+const { titulo = 'Han confiado en nosotros', clientes = CLIENTES } = Astro.props;
+
+const ALTO = 60;
+const items = await Promise.all(clientes.map(async (c) => {
+  const archivo = c.logo ? path.join(process.cwd(), 'public', c.logo) : null;
+  if (!archivo || !fs.existsSync(archivo)) return { ...c, img: null };
+  // Medidas reales del archivo para reservar el espacio (evita saltos de diseño).
+  const { width = ALTO, height = ALTO } = await sharp(archivo).metadata();
+  return { ...c, img: { src: c.logo!, w: Math.round((width / height) * ALTO), h: ALTO } };
+}));
+---
+<section class="clients" aria-labelledby="clientes-t">
+  <div class="wrap cl-head">
+    <div><span class="kicker">Clientes</span><h2 id="clientes-t">{titulo}<span>.</span></h2></div>
+    <p>Municipalidades, entidades del Estado y empresas que nos encargaron la ejecución de sus obras.</p>
+  </div>
+  <div class="cl-marquee">
+    <div class="cl-track">
+      {[0, 1].map((copia) => (
+        <ul aria-hidden={copia === 1 ? 'true' : undefined}>
+          {items.map((c) => {
+            const contenido = c.img
+              ? <img src={c.img.src} alt={copia === 1 ? '' : c.n} width={c.img.w} height={c.img.h} loading="lazy" decoding="async" />
+              : <span>{c.n}</span>;
+            return (
+              <li>
+                {c.url && copia === 0 ? <a href={c.url} target="_blank" rel="noopener">{contenido}</a> : contenido}
+              </li>
+            );
+          })}
+        </ul>
+      ))}
+    </div>
+  </div>
+</section>

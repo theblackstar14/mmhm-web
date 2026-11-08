@@ -1,14 +1,17 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Icon from '../../components/Icon.astro';
+import { Image } from 'astro:assets';
 import { IC } from '../../lib/icons';
 import { SERVICIOS, FAMILIAS, nn } from '../../lib/site';
-import { getObras, urlObra } from '../../lib/obras';
-const obras = Object.fromEntries((await getObras()).map((o) => [o.id, o]));
+import { getObras, urlObra, obrasDeServicio } from '../../lib/obras';
+import { imagenSitio } from '../../lib/imagenes';
+const obras = await getObras();
+const relacionadas = (id: string) => obrasDeServicio(obras, id);
 ---
 <Base title="Servicios | MM High Metrik Engineers" nav="servicios" description={`${SERVICIOS.length} servicios de construcción: ${SERVICIOS.map((s) => s.sh.toLowerCase()).join(", ")}.`}>
   <div class="page-hero">
-    <img src="/assets/servicios/defensas-riberenas.jpg" alt="">
+    <Image src={imagenSitio('servicios/defensas-riberenas.jpg')} widths={[640, 960, 1280, 1600]} sizes="100vw" format="webp" alt="" fetchpriority="high" loading="eager" />
     <div class="wrap">
       <p class="crumbs"><a href="/">Inicio</a> / Servicios</p>
       <h1>Servicios</h1>
@@ -21,28 +24,34 @@ const obras = Object.fromEntries((await getObras()).map((o) => [o.id, o]));
       <nav class="svc-index" id="svcIndex" aria-label="Índice de servicios">
         {Object.entries(FAMILIAS).map(([f, n]) => (
           <>
-            <h4>{n}</h4>
+            <h2>{n}</h2>
             {SERVICIOS.map((s, i) => s.f === f && <a href={`#servicio-${s.id}`} data-s={s.id}><span>{nn(i)}</span><b class="lg">{s.t}</b><b class="sm">{s.sh}</b></a>)}
           </>
         ))}
       </nav>
       <div class="svc-list">
-        {SERVICIOS.map((s, i) => (
-          <article class="svc-item" id={`servicio-${s.id}`}>
-            <div class="svc-media"><img src={s.img} alt={s.t} loading="lazy"><span class="svc-num" aria-hidden="true">{nn(i)}</span></div>
-            <div class="svc-body">
-              <small>{FAMILIAS[s.f]}</small>
-              <h2>{s.t}</h2>
-              <p>{s.d}</p>
-              <div class="svc-cols">
-                <div><h4>Alcance</h4><ul class="checks">{s.a.map((x) => <li>{x}</li>)}</ul></div>
-                <div><h4>Obras relacionadas</h4><div class="chips-rel">
-                  {s.obras.filter((id) => obras[id]).map((id) => <a href={urlObra(id)}><Icon d={IC.pin} w={2.2} />{obras[id].data.titulo}</a>)}
-                </div></div>
-              </div>
-              <a class="btn btn-primary" href={`/?servicio=${encodeURIComponent(s.t)}#contacto`}>Solicitar información</a>
-            </div>
-          </article>
+        {Object.keys(FAMILIAS).map((f) => (
+          <div class="svc-fam" id={`esp-${f}`}>
+            {SERVICIOS.map((s, i) => s.f === f && (
+              <article class="svc-item" id={`servicio-${s.id}`}>
+                <div class="svc-media"><Image src={imagenSitio(s.img)} widths={[480, 640, 840, 1200, 1600]} sizes="(max-width:1100px) 100vw, 820px" format="webp" alt={s.t} loading="lazy" /><span class="svc-num" aria-hidden="true">{nn(i)}</span></div>
+                <div class="svc-body">
+                  <small>{FAMILIAS[s.f]}</small>
+                  <h2>{s.t}</h2>
+                  <p>{s.d}</p>
+                  <div class="svc-cols">
+                    <div><h3>Alcance</h3><ul class="checks">{s.a.map((x) => <li>{x}</li>)}</ul></div>
+                    {relacionadas(s.id).length > 0 && (
+                      <div><h3>Obras relacionadas</h3><div class="chips-rel">
+                        {relacionadas(s.id).map((o) => <a href={urlObra(o)}><Icon d={IC.pin} w={2.2} />{o.data.titulo}</a>)}
+                      </div></div>
+                    )}
+                  </div>
+                  <a class="btn btn-primary" href={`/contacto/?servicio=${encodeURIComponent(s.t)}`}>Solicitar información</a>
+                </div>
+              </article>
+            ))}
+          </div>
         ))}
       </div>
     </div>
@@ -50,16 +59,45 @@ const obras = Object.fromEntries((await getObras()).map((o) => [o.id, o]));
   <div class="band">
     <div class="wrap">
       <h2>¿No encuentra el servicio que necesita?</h2>
-      <a class="btn" href="/#contacto">Cuéntenos su proyecto</a>
+      <a class="btn" href="/contacto/">Cuéntenos su proyecto</a>
     </div>
   </div>
   <script is:inline slot="scripts">
   (function(){
+    const idx=document.getElementById("svcIndex");
+    if(!idx) return;
+    const links=[...idx.querySelectorAll("a")];
+    const movil=matchMedia("(max-width:1000px)");
+    const quieto=matchMedia("(prefers-reduced-motion:reduce)");
+    // Degradado arriba/abajo solo si hay más contenido en esa dirección
+    function bordes(){
+      idx.classList.toggle("ft",idx.scrollTop>2);
+      idx.classList.toggle("fb",idx.scrollTop+idx.clientHeight<idx.scrollHeight-2);
+    }
+    // Desplaza solo el índice (no la página) para que el ítem activo quede visible
+    function mostrar(a){
+      const r=a.getBoundingClientRect(), n=idx.getBoundingClientRect(), m=36;
+      let d=0;
+      if(r.top<n.top+m) d=r.top-n.top-m;
+      else if(r.bottom>n.bottom-m) d=r.bottom-n.bottom+m;
+      if(d) idx.scrollTo({top:idx.scrollTop+d,behavior:quieto.matches?"auto":"smooth"});
+    }
+    // Chrome no desplaza al enfocar un enlace parcialmente visible: en el índice horizontal quedaría cortado
+    idx.addEventListener("focusin",e=>{ if(movil.matches) e.target.scrollIntoView({block:"nearest",inline:"nearest",behavior:quieto.matches?"auto":"smooth"}); });
+    idx.addEventListener("scroll",bordes,{passive:true});
+    addEventListener("resize",bordes);
+    // Recalcula si cambia la altura del índice o de sus ítems (p. ej. al cargar las fuentes)
+    if("ResizeObserver" in window){ const ro=new ResizeObserver(bordes); ro.observe(idx); [...idx.children].forEach(c=>ro.observe(c)); }
+    else addEventListener("load",bordes);
+    bordes();
     if(!("IntersectionObserver" in window)) return;
-    const links=[...document.querySelectorAll("#svcIndex a")];
     const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){
       const id=e.target.id.replace("servicio-","");
-      links.forEach(a=>{ const on=a.dataset.s===id; a.classList.toggle("on",on); if(on && matchMedia("(max-width:1000px)").matches) a.scrollIntoView({block:"nearest",inline:"center"}); });
+      links.forEach(a=>{ const on=a.dataset.s===id; a.classList.toggle("on",on);
+        if(!on) return;
+        if(movil.matches) a.scrollIntoView({block:"nearest",inline:"center"});
+        else mostrar(a);
+      });
     }}),{rootMargin:"-35% 0px -60% 0px"});
     document.querySelectorAll(".svc-item").forEach(el=>io.observe(el));
   })();

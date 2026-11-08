@@ -1,0 +1,200 @@
+---
+import Base from '../layouts/Base.astro';
+import Clientes from '../components/Clientes.astro';
+import { Image } from 'astro:assets';
+import { getEntry } from 'astro:content';
+import { imagenSitio } from '../lib/imagenes';
+import { WA } from '../lib/site';
+import '../styles/nosotros.css';
+
+const foto = (n: string) => imagenSitio(`nosotros/${n}.jpg`);
+
+const ESPECIALIDADES = [
+  { f: 'inf', t: 'Infraestructura', d: 'Defensas ribereñas, movimiento de tierras, geomallas, demoliciones' },
+  { f: 'edi', t: 'Edificación', d: 'Obras civiles, plazas públicas, colegios, polvorines' },
+  { f: 'ins', t: 'Instalaciones', d: 'Eléctricas de media y baja tensión, contraincendios, estructuras metálicas' },
+  { f: 'ing', t: 'Ingeniería', d: 'Expedientes técnicos' },
+];
+
+const ETAPAS = [
+  { n: '01', t: 'Planificación', d: 'Expediente, presupuesto y cronograma.', e: 'Plan de trabajo y cronograma', img: 'planificacion', cap: 'Topografía y replanteo', alt: 'Topógrafo con estación total en la ribera del río Rímac', pos: '8% center' },
+  { n: '02', t: 'Ejecución', d: 'Personal y equipo propios en obra.', e: 'Cuaderno de obra al día', img: 'ejecucion', cap: 'Adoquinado · Plaza Dos de Mayo', alt: 'Cuadrilla colocando adoquines en la Plaza Dos de Mayo', pos: 'center' },
+  { n: '03', t: 'Control', d: 'Avance, valorizaciones e informes.', e: 'Valorizaciones e informes mensuales', img: 'control', cap: 'Pruebas de tablero eléctrico', alt: 'Técnico de MM High Metrik revisando un tablero eléctrico', pos: 'center 35%' },
+  { n: '04', t: 'Entrega', d: 'Recepción de obra, documentación final y liquidación.', e: 'Acta de recepción y dossier', img: 'entrega', cap: 'Plaza Dos de Mayo terminada', alt: 'Plaza Dos de Mayo con el adoquinado terminado', pos: 'center' },
+];
+
+const COMPROMISOS = [
+  { n: '01', t: 'Puntualidad', d: 'Planificamos para entregar antes del plazo, no en el último día.', p: 'Cementerio Municipal de Surco: 9 puntos por delante del cronograma.', href: '/proyectos/crematorio-surco/', img: 'puntualidad', alt: 'Letrero del Crematorio Municipal de Surco', pos: '40% 6%' },
+  { n: '02', t: 'Trámites incluidos', d: 'Gestionamos las autorizaciones para que el cliente no tenga que hacerlo.', p: 'Autorizaciones GTU y SERPAR gestionadas por nosotros.', img: 'tramites', alt: 'Visita de supervisión de la Municipalidad de Lima en obra', pos: 'center' },
+  { n: '03', t: 'Cuidado ambiental', d: 'El desmonte va a escombreras autorizadas, nunca a la vía pública ni a riberas.', p: 'Transporte y disposición a cargo de operadoras de residuos registradas (EO-RS) ante el MINAM.', img: 'ambiental', alt: 'Volquete cargado con material de descolmatación del río Rímac', pos: 'center' },
+  { n: '04', t: 'Equipo propio', d: 'Personal capacitado y maquinaria propia, con seguridad en cada jornada.', p: 'Ver equipo en campo: Río Rímac, Ramiro Prialé.', href: '/proyectos/rio-rimac-ramiro-priale/', img: 'equipo-propio', alt: 'Excavadoras y cargador frontal de MM High Metrik en obra', pos: 'center 70%' },
+];
+
+// Obras destacadas: usan la portada de su propia ficha.
+const DESTACADAS = ['plaza-bolognesi', 'rio-rimac-ramiro-priale', 'crematorio-surco'];
+const obras = (await Promise.all(DESTACADAS.map((id) => getEntry('obras', id)))).filter((o) => o && o.data.portada);
+---
+<Base title="Nosotros | MM High Metrik Engineers" nav="nosotros" description="MM High Metrik Engineers S.A.C.: constructora peruana con personal y maquinaria propios. Obra pública en plazas, riberas y edificios para municipalidades y entidades del Estado.">
+  <div class="page-hero">
+    <Image src={imagenSitio('proyectos/rio-lurin.jpg')} widths={[640, 960, 1280, 1400]} sizes="100vw" format="webp" alt="" fetchpriority="high" loading="eager" />
+    <div class="wrap">
+      <p class="crumbs"><a href="/">Inicio</a> / Nosotros</p>
+      <h1>Nosotros</h1>
+      <div class="cota" style="color:var(--blue-2)"><i></i><span>Ingeniería, gestión y obra</span><i></i></div>
+      <p>Servicios integrales de construcción, remodelación y mantenimiento.</p>
+      <div class="hero-facts nos-facts">
+        <div><strong class="count" data-to="10" data-suffix="+">10+</strong><span>Obras ejecutadas para el sector público y privado</span></div>
+        <div><strong class="count" data-to="4">4</strong><span>Entidades públicas que han confiado en nosotros</span></div>
+        <div><strong class="count" data-to="14">14</strong><span>Servicios de construcción e instalaciones</span></div>
+        <div><strong>Lima</strong><span>Plazas, riberas y edificios públicos en uso</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ed">
+    <!-- Quiénes somos -->
+    <section class="ed-sec">
+      <div class="wrap ed-about">
+        <div class="rv">
+          <p class="ed-k">Quiénes somos</p>
+          <h2 class="ed-h2">Una empresa<br>de obra, no<br>de oficina</h2>
+          <p class="ed-p">No subcontratamos la obra: el personal y la maquinaria en campo son nuestros, y un mismo equipo responde desde el primer metrado hasta el acta de entrega.</p>
+          <p class="ed-p">Estamos acostumbrados a trabajar en plazas, riberas y vías que siguen en uso, con plazos cortos y supervisión permanente de la entidad.</p>
+          <ul class="ed-esp">
+            {ESPECIALIDADES.map((e) => <li><a href={`/servicios/#esp-${e.f}`}><b>{e.t}</b><span>{e.d}</span></a></li>)}
+          </ul>
+        </div>
+        <div class="ed-collage rv">
+          <figure class="ph ph-wide"><Image src={foto('equipo-obra')} widths={[640, 960, 1400]} sizes="(max-width:960px) 92vw, 680px" format="webp" alt="Ingenieros de MM High Metrik supervisando en obra" style="object-position:center 30%" loading="lazy" /><figcaption>Equipo en obra</figcaption></figure>
+          <figure class="ph"><Image src={foto('oficina')} widths={[400, 640, 900]} sizes="(max-width:960px) 44vw, 320px" format="webp" alt="Recepción de la oficina de MM High Metrik en San Isidro" loading="lazy" /><figcaption>Oficina · San Isidro</figcaption></figure>
+          <figure class="ph"><Image src={foto('charla-seguridad')} widths={[400, 640, 900]} sizes="(max-width:960px) 44vw, 320px" format="webp" alt="Charla de seguridad del equipo antes de iniciar la jornada" loading="lazy" /><figcaption>Charla de seguridad</figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- Visión y misión -->
+    <section class="ed-mvband">
+      <Image class="ed-mvbg" src={foto('mv-fondo')} widths={[960, 1400, 2000]} sizes="100vw" format="webp" alt="" loading="lazy" />
+      <div class="wrap ed-mvgrid">
+        <article class="rv">
+          <p class="ed-k">Nuestra visión</p>
+          <h2 class="ed-mvt"><span class="ln"><span>Ser reconocidos</span></span><span class="ln"><span>como referentes</span></span><span class="ln"><span>de excelencia <em>//</em></span></span></h2>
+          <p>Ser reconocidos en el mercado de la construcción como una empresa con pasión por los altos estándares, superando las expectativas de nuestros clientes y, con esto, llevar a la población a una mejor calidad de vida.</p>
+        </article>
+        <article class="rv">
+          <p class="ed-k">Nuestra misión</p>
+          <h2 class="ed-mvt"><span class="ln"><span>Proyectos civiles</span></span><span class="ln"><span>modernos con</span></span><span class="ln"><span>calidad garantizada <em>//</em></span></span></h2>
+          <p>Realizar proyectos de construcción civil modernos, siendo el apoyo principal de nuestros clientes, garantizando seguridad y respetando los plazos de ejecución. Nuestra prioridad es dar la confianza que nuestra experiencia en el mercado nos permite, con la calidad de siempre y optimizando los tiempos.</p>
+        </article>
+        <ul class="ed-pilares rv">
+          <li><b>Seguridad</b><span>Garantizada en cada jornada de obra.</span></li>
+          <li><b>Plazos</b><span>Respetados durante toda la ejecución.</span></li>
+          <li><b>Calidad</b><span>La de siempre, optimizando los tiempos.</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Filosofía de trabajo -->
+    <section class="ed-sec ed-phil">
+      <div class="wrap">
+        <div class="ed-head rv">
+          <div><p class="ed-k">Filosofía de trabajo</p><h2 class="ed-h2">Gestión integral<br>del proyecto</h2></div>
+          <p class="ed-p">Cuatro etapas, cada una con un entregable. El cliente sabe en todo momento en qué punto está su obra y qué viene después. Los trámites ante GTU y SERPAR van incluidos.</p>
+        </div>
+        <div class="ed-steps">
+          {ETAPAS.map((s) => (
+            <div class="ed-step rv">
+              <figure class="ph"><Image src={foto(s.img)} widths={[400, 640, 900]} sizes="(max-width:480px) 92vw, (max-width:960px) 46vw, 300px" format="webp" alt={s.alt} style={`object-position:${s.pos}`} loading="lazy" /><figcaption>{s.cap}</figcaption></figure>
+              <em>{s.n}</em><h3>{s.t}</h3><p>{s.d}</p><span class="ent"><b>Entregable</b>{s.e}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Compromisos -->
+    <section class="ed-sec">
+      <div class="wrap">
+        <p class="ed-k rv">Lo que nos diferencia</p>
+        <h2 class="ed-h2 rv" style="margin-bottom:44px">Cuatro compromisos<br>que se pueden verificar</h2>
+        <div class="ed-vals">
+          {COMPROMISOS.map((c) => (
+            <div class="ed-val rv">
+              <figure class="ph"><Image src={foto(c.img)} widths={[480, 800, 1200]} sizes="(max-width:960px) 92vw, 600px" format="webp" alt={c.alt} style={`object-position:${c.pos}`} loading="lazy" /></figure>
+              <span class="n">{c.n}</span>
+              <div><h3>{c.t}</h3><p>{c.d}</p><span class="proof">{c.href ? <a href={c.href}>{c.p}</a> : c.p}</span></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Obras destacadas -->
+    <section class="ed-sec ed-dark">
+      <div class="wrap">
+        <p class="ed-k rv">Obras que nos respaldan</p>
+        <div class="ed-feat">
+          {obras.map((o) => (
+            <a class="ed-fc rv" href={`/proyectos/${o!.id}/`}>
+              <figure class="ph"><Image src={o!.data.portada!} widths={[400, 640, 900]} sizes="(max-width:960px) 92vw, 400px" format="webp" alt={o!.data.titulo} loading="lazy" /></figure>
+              <span>{[o!.data.cliente, o!.data.ubicacion].filter(Boolean).join(' · ')}</span>
+              <h3>{o!.data.titulo}</h3>
+            </a>
+          ))}
+        </div>
+        <a class="btn btn-ghost rv" href="/proyectos/" style="margin-top:40px">Ver todas las obras</a>
+      </div>
+    </section>
+  </div>
+
+  <Clientes />
+
+  <div class="band">
+    <div class="wrap">
+      <h2>¿Tiene un proyecto en mente?</h2>
+      <div class="ed-band-btns">
+        <a class="btn" href="/contacto/">Solicitar cotización</a>
+        <a class="btn btn-wa" href={`https://wa.me/${WA}?text=${encodeURIComponent('Hola, quisiera cotizar una obra.')}`} target="_blank" rel="noopener">WhatsApp</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="ed-lb" id="edLb" hidden role="dialog" aria-modal="true" aria-label="Foto ampliada">
+    <button class="ed-lb-x" type="button" aria-label="Cerrar">×</button>
+    <button class="ed-lb-nav prev" type="button" aria-label="Foto anterior">‹</button>
+    <figure><img alt=""><figcaption></figcaption></figure>
+    <button class="ed-lb-nav next" type="button" aria-label="Foto siguiente">›</button>
+  </div>
+
+  <script is:inline>
+  (function(){
+    // Visor: cualquier foto de la página se abre en grande y se recorre con flechas o teclado.
+    var lb=document.getElementById("edLb"), im=lb.querySelector("img"), cap=lb.querySelector("figcaption"), last=null, i=0;
+    var figs=[].slice.call(document.querySelectorAll(".ed .ph:not(.ed-fc .ph)"));
+    function show(k){i=(k+figs.length)%figs.length;var f=figs[i],src=f.querySelector("img");var ss=(src.getAttribute("srcset")||"").split(",").map(function(x){return x.trim().split(" ")[0]}).filter(Boolean);im.src=ss.length?ss[ss.length-1]:(src.currentSrc||src.src);im.alt=src.alt;cap.textContent=(f.querySelector("figcaption")||{}).textContent||src.alt;}
+    function open(k){last=document.activeElement;show(k);lb.hidden=false;document.body.style.overflow="hidden";lb.querySelector(".ed-lb-x").focus();}
+    function close(){lb.hidden=true;document.body.style.overflow="";if(last)last.focus();}
+    figs.forEach(function(f,k){f.tabIndex=0;f.setAttribute("role","button");f.setAttribute("aria-label","Ampliar foto: "+(f.querySelector("img").alt||""));
+      f.addEventListener("click",function(){open(k)});f.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();open(k);}});});
+    lb.querySelector(".ed-lb-x").onclick=close;lb.querySelector(".prev").onclick=function(){show(i-1)};lb.querySelector(".next").onclick=function(){show(i+1)};
+    lb.addEventListener("click",function(e){if(e.target===lb)close();});
+    document.addEventListener("keydown",function(e){if(lb.hidden)return;if(e.key==="Escape")close();if(e.key==="ArrowLeft")show(i-1);if(e.key==="ArrowRight")show(i+1);});
+  })();
+  (function(){
+    var reduce=matchMedia("(prefers-reduced-motion: reduce)").matches, io=("IntersectionObserver" in window);
+    // Contadores de la portada, igual que en Inicio.
+    if(!reduce && io){
+      var run=function(el){var to=+el.dataset.to,suf=el.dataset.suffix||"",t0=performance.now(),dur=1400;
+        var tick=function(t){var k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);el.textContent=Math.round(to*e)+suf;if(k<1)requestAnimationFrame(tick);else el.textContent=to+suf;};requestAnimationFrame(tick);};
+      var oc=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){run(e.target);oc.unobserve(e.target);}});},{threshold:.6});
+      document.querySelectorAll(".nos-facts .count").forEach(function(el){el.textContent="0"+(el.dataset.suffix||"");oc.observe(el);});
+    }
+    // Entradas suaves: el contenido solo se oculta si el script corre.
+    var els=document.querySelectorAll(".ed .rv");
+    if(reduce || !io) return;
+    document.documentElement.classList.add("ed-js");
+    var or=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");or.unobserve(e.target);}});},{threshold:.12});
+    els.forEach(function(e){or.observe(e);});
+  })();
+  </script>
+</Base>

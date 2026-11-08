@@ -67,19 +67,25 @@ export async function recorridoDe(obra: CollectionEntry<'obras'>, wa: string) {
   if (!d.recorrido) return null;
   const set: SetKey = d.recorrido.set ?? (d.tipo === 'rio' ? 'rios' : 'generico');
   const S = SETS[set], g = S.geo;
-  const pzs = await Promise.all(S.piezas.map(async (p) => (await getImage({ src: p, width: 560, format: 'webp' })).src));
+  /* El plano recibe la versión según su tamaño en pantalla; el panel de detalle usa siempre 560 px (pz). */
+  const srcset = async (src: ImageMetadata, width: number, widths: number[]) => {
+    const r = await getImage({ src, width, widths: widths.filter((w) => w <= src.width), format: 'webp' });
+    return { src: r.src, srcset: r.srcSet.attribute };
+  };
+  const pzsPlano = await Promise.all(S.piezas.map((p) => srcset(p, 560, [120, 240, 420, 560])));
+  const pzs = pzsPlano.map((p) => p.src);
   const fases = await Promise.all(d.recorrido.fases.map(async (f) => ({
     t: f.t, s: f.s, lead: f.lead, inc: f.inc, out: f.out,
     foto: f.foto ? (await getImage({ src: f.foto, width: 1000, format: 'webp' })).src : null,
   })));
   return {
     set, W: g.W, H: g.H, ttl: g.ttl, stat: d.recorrido.stat,
-    base: (await getImage({ src: S.base, width: 2000, format: 'webp' })).src,
+    base: await srcset(S.base, 2000, [640, 960, 1280, 1600, 2000]),
     piezas: g.plat.map(([x0, , x1, y1], i) => {
       const w = (x1 - x0) * g.K, cx = (x0 + x1) / 2;
-      return { src: pzs[i], style: `left:${((cx - w / 2) / g.W) * 100}%;bottom:${((g.H - y1 - g.off) / g.H) * 100}%;width:${(w / g.W) * 100}%;--d:${0.25 + i * 0.16}s` };
+      return { ...pzsPlano[i], style: `left:${((cx - w / 2) / g.W) * 100}%;bottom:${((g.H - y1 - g.off) / g.H) * 100}%;width:${(w / g.W) * 100}%;--d:${0.25 + i * 0.16}s` };
     }),
-    lbl: g.lbl.map(([x, y, w], i) => `left:${(x / g.W) * 100}%;top:${(y / g.H) * 100}%;width:${(w / g.W) * 100}%;--d:${0.35 + i * 0.16}s`),
+    lbl: g.lbl.map(([x, y, w], i) => `left:${(x / g.W) * 100}%;top:${(y / g.H) * 100}%;width:${(w / g.W) * 100}%;--d:${0.35 + i * 0.16}s;--nx:${((g.plat[i][0] + g.plat[i][2]) / 2 / g.W) * 100}%;--ny:${(g.plat[i][3] / g.H) * 100}%`),
     data: { rutas: g.rutas, obra: d.titulo, wa, pz: pzs, fases },
   };
 }

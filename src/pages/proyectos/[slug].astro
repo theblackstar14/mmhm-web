@@ -15,11 +15,11 @@ export async function getStaticPaths() {
 const { obra, prev, next, todas } = Astro.props as { obra: Obra; prev: Obra | null; next: Obra | null; todas: Obra[] };
 const d = obra.data;
 const tipo = TIPOS[d.tipo as TipoKey];
-const servicios = serviciosDe(obra.id);
+const servicios = serviciosDe(obra);
 const wa = waObra(obra);
 
 /* ---------- Fotos: mosaico + galería en modal ---------- */
-const fotos = fotosDe(obra.id);
+const fotos = fotosDe(obra);
 if (d.portada) {
   const i = fotos.findIndex((f) => f.img.src === d.portada!.src);
   if (i > 0) fotos.unshift(...fotos.splice(i, 1));
@@ -87,7 +87,7 @@ const nFotos = galeria.length;
       {mosaico.length === 0 && <div class="ob-ph" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.2" set:html={tipo.i} /></div>}
       {mosaico.map((f, i) => (
         <figure data-i={i} tabindex="0" role="button" aria-label={`Ampliar foto ${i + 1} de ${nFotos}`}>
-          <Picture src={f.img} formats={['webp']} fallbackFormat="webp" widths={i === 0 ? [800, 1300] : [480, 800]} sizes={i === 0 ? '(max-width:980px) 100vw, 40vw' : '(max-width:980px) 50vw, 20vw'} alt={`${d.titulo}: ${FASES[f.fase].toLowerCase()}`} fetchpriority={i === 0 ? 'high' : undefined} loading={i === 0 ? 'eager' : 'lazy'} />
+          <Picture src={f.img} formats={['webp']} fallbackFormat="webp" widths={i === 0 ? [800, 1300] : [480, 800]} sizes={i === 0 ? '(max-width:980px) 100vw, 40vw' : '(max-width:980px) 50vw, 20vw'} alt={f.alt ?? `${d.titulo}: ${FASES[f.fase].toLowerCase()}`} fetchpriority={i === 0 ? 'high' : undefined} loading={i === 0 ? 'eager' : 'lazy'} />
         </figure>
       ))}
       {nFotos > 1 && <button class="ob-all" id="galOpen" type="button"><Icon d={IC.grid} />Ver las {nFotos} fotos</button>}
@@ -107,10 +107,10 @@ const nFotos = galeria.length;
         </a>
       )}
     </div>
-    {(d.hicimos || d.solucion) && (
+    {(d.hicimos?.length || d.solucion) && (
       <div>
         <h2>Lo que hicimos</h2>
-        {d.hicimos ? <ul class="ob-check">{d.hicimos.map((x) => <li>{x}</li>)}</ul> : <p>{d.solucion}</p>}
+        {d.hicimos?.length ? <ul class="ob-check">{d.hicimos.map((x) => <li>{x}</li>)}</ul> : <p>{d.solucion}</p>}
       </div>
     )}
   </section>
@@ -144,12 +144,12 @@ const nFotos = galeria.length;
         <h2 class="sr">Recorrido de la obra</h2>
         <figure class="proc-fig" id="procFig">
           <div class="ruta-stage" id="procStage" style={`aspect-ratio:${rec.W}/${rec.H}`}>
-            <img class="proc-base" src={rec.base} width={rec.W} height={rec.H} alt="" loading="lazy">
+            <img class="proc-base" {...rec.base} sizes="(max-width:1200px) 100vw, 1160px" width={rec.W} height={rec.H} alt="" loading="lazy">
             <svg class="ruta-glow" viewBox={`0 0 ${rec.W} ${rec.H}`} aria-hidden="true"><defs><filter id="rgBlur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8" /></filter></defs><path class="halo" id="gHalo" pathLength="100" /><path class="core" id="gCore" pathLength="100" /></svg>
             <div class:list={['proc-ttl', { center: rec.ttl.center }]} style={`left:${rec.ttl.x}%;top:${rec.ttl.y}%`}><p class="k">Recorrido de la obra</p><p>{d.titulo}</p><i></i></div>
             {rec.stat && <div class="proc-stat"><b>{rec.stat[0]}</b><span>{rec.stat[1]}</span></div>}
             {rec.piezas.map((p, i) => (
-              <button class="pz" data-i={i} style={p.style} aria-label={`Fase ${i + 1}: ${rec!.data.fases[i].t}. Ver detalle`}><img src={p.src} alt="" loading="lazy"></button>
+              <button class="pz" data-i={i} style={p.style} aria-label={`Fase ${i + 1}: ${rec!.data.fases[i].t}. Ver detalle`}><img src={p.src} srcset={p.srcset} sizes="(max-width:1200px) 18vw, 210px" alt="" loading="lazy"></button>
             ))}
             {rec.data.fases.map((f, i) => (
               <div class="proc-lbl" data-i={i} style={rec!.lbl[i]}><span class="n">{i + 1}</span><b>{f.t}</b><small>{f.s}.</small></div>
@@ -171,7 +171,7 @@ const nFotos = galeria.length;
     {d.coords && (
       <div>
         <h2>Ubicación</h2>
-        <div class="obra-map" id="obraMap" data-lat={d.coords[0]} data-lng={d.coords[1]} data-t={d.titulo} aria-label={`Mapa de ubicación de ${d.titulo}`}></div>
+        <div class="obra-map" id="obraMap" role="region" data-lat={d.coords[0]} data-lng={d.coords[1]} data-t={d.titulo} aria-label={`Mapa de ubicación de ${d.titulo}`}></div>
         <div class="ob-locm"><span>{fmtLL(d.coords)}</span><a href={`/proyectos/?vista=mapa&obra=${obra.id}`}>Ver en el mapa de obras<Icon d={IC.arrow} /></a></div>
       </div>
     )}

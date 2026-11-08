@@ -7,7 +7,7 @@
 .ob-head h1{font-size:clamp(2rem,4vw,3.3rem);font-stretch:125%;letter-spacing:-.035em;margin-top:10px}
 .ob-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 .ob-tag{font-size:.8rem;font-weight:700;padding:5px 10px;border-radius:30px;background:var(--paper);color:var(--ink)}
-.ob-tag.b{background:#E7EEFF;color:var(--blue)}
+.ob-tag.b{background:#EEF3FF;color:var(--blue)}
 .ob-figs{display:grid;grid-template-columns:repeat(var(--n,3),1fr);margin-top:24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .ob-fig{padding:16px 14px 14px 0}
 .ob-fig+.ob-fig{border-left:1px solid var(--line);padding-left:14px}
@@ -167,3 +167,22 @@
 /* Recorrido: bordes que se funden con el fondo en los 4 lados (evita el "corte" visible a un lado) */
 .ob-ruta{background:#F6F9FC}
 .ruta-stage{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 3%,#000 97%,transparent 100%),linear-gradient(180deg,transparent 0,#000 7%,#000 93%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent 0,#000 3%,#000 97%,transparent 100%),linear-gradient(180deg,transparent 0,#000 7%,#000 93%,transparent 100%);mask-composite:intersect}
+/* Móvil: el contenido no puede ensanchar la cabecera */
+@media (max-width:767px){
+  .ob-top{grid-template-columns:minmax(0,1fr)}
+  .ob-head h1{overflow-wrap:anywhere}
+}
+/* Las cifras no caben en 3 columnas: pasan a filas */
+@media (max-width:419px){
+  .ob-figs{grid-template-columns:minmax(0,1fr)}
+  .ob-fig,.ob-fig+.ob-fig{display:grid;grid-template-columns:112px minmax(0,1fr);gap:10px;align-items:baseline;padding:10px 0;border-left:0}
+  .ob-fig+.ob-fig{border-top:1px solid var(--line)}
+  .ob-fig span{margin-top:0}
+}
+@media (max-width:359px){.ob-head h1{font-size:1.7rem}}
+/* Recorrido: títulos ilegibles a este tamaño; quedan para lectores de pantalla y en la lista de fases. El número va sobre su plataforma (--nx, --ny) */
+@media (max-width:520px){
+  .proc-lbl{left:var(--nx)!important;top:var(--ny)!important;width:auto!important;margin:-13px 0 0 -13px}
+  .proc-lbl b{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .proc-lbl .n{width:26px;height:26px;font-size:15px}
+}

@@ -1,0 +1,8 @@
+// Vista previa de la prueba T12: Worker con assets estáticos. Sin secretos en este archivo.
+{
+  "name": "mmhm-web-spike",
+  "main": "./dist/_worker.js/index.js",
+  "compatibility_date": "2026-01-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": { "directory": "./dist", "binding": "ASSETS" }
+}

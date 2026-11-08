@@ -1,7 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Icon from '../../components/Icon.astro';
-import { Picture, getImage } from 'astro:assets';
+import { Image, Picture, getImage } from 'astro:assets';
 import { IC } from '../../lib/icons';
 import { TIPOS, type TipoKey } from '../../lib/site';
 import { getObras, urlObra, waObra, fotosDe, datosCliente } from '../../lib/obras';
@@ -10,19 +10,23 @@ const obras = await getObras();
 const datos = await datosCliente(obras);
 const feat = obras.find((o) => o.data.destacadaListado && o.data.portada);
 const heroSrc = obras.find((o) => o.id === 'costa-verde')?.data.portada;
-const hero = heroSrc ? await getImage({ src: heroSrc, width: 1800, format: 'webp' }) : null;
 const og = heroSrc ? (await getImage({ src: heroSrc, width: 1200, height: 630, fit: 'cover', format: 'jpg' })).src : undefined;
 const tipos = Object.entries(TIPOS).map(([k, v]) => ({ k, n: v.n, c: obras.filter((o) => o.data.tipo === k).length })).filter((t) => t.c);
-let featAntes: string | null = null, featDesp: string | null = null;
+/* Comparador de la obra destacada: cada pantalla descarga el ancho que necesita. */
+const fotoComparar = async (src: ImageMetadata) => {
+  const r = await getImage({ src, width: 1200, widths: [480, 720, 960, 1200], format: 'webp' });
+  return { src: r.src, srcset: r.srcSet.attribute, sizes: '(max-width:1000px) 100vw, 58vw' };
+};
+let featAntes: Awaited<ReturnType<typeof fotoComparar>> | null = null, featDesp: typeof featAntes = null;
 if (feat?.data.antes && feat.data.portada) {
-  featAntes = (await getImage({ src: feat.data.antes, width: 1200, format: 'webp' })).src;
-  featDesp = (await getImage({ src: feat.data.despuesComparar ?? feat.data.portada, width: 1200, format: 'webp' })).src;
+  featAntes = await fotoComparar(feat.data.antes);
+  featDesp = await fotoComparar(feat.data.despuesComparar ?? feat.data.portada);
 }
 ---
 <Base title="Obras realizadas | MM High Metrik Engineers" nav="proyectos" leaflet image={og}
   description={`${obras.length} obras de construcción, defensas ribereñas, espacios públicos y edificaciones ejecutadas por MM High Metrik Engineers en Lima y Puno.`}>
   <div class="page-hero">
-    {hero && <img src={hero.src} alt="" style="filter:grayscale(1) contrast(1.1)">}
+    {heroSrc && <Image src={heroSrc} widths={[640, 960, 1280, 1800]} sizes="100vw" format="webp" alt="" fetchpriority="high" loading="eager" style="filter:grayscale(1) contrast(1.1)" />}
     <div class="wrap">
       <p class="crumbs"><a href="/">Inicio</a> / Proyectos</p>
       <h1>Obras realizadas</h1>
@@ -51,7 +55,7 @@ if (feat?.data.antes && feat.data.portada) {
           <div><h2>Mapa de obras</h2><p class="lead" style="margin-top:10px">Seleccione un punto para ver la obra. El filtro de arriba también se aplica al mapa.</p></div>
           <div class="map-jump" role="group" aria-label="Ir a región"><button class="chip" data-jump="lima">Lima</button><button class="chip" data-jump="puno">Puno</button><button class="chip" data-jump="all">Todo el Perú</button></div>
         </div>
-        <div class="obras-map" id="obrasMap" aria-label="Mapa de ubicación de las obras"></div>
+        <div class="obras-map" id="obrasMap" role="region" aria-label="Mapa de ubicación de las obras"></div>
       </div>
       <div id="viewLista">
         {feat && (
@@ -59,16 +63,16 @@ if (feat?.data.antes && feat.data.portada) {
             <div class="fo-media">
               {featAntes && feat.data.antesAlineado ? (
                 <div class="ba-frame" style="--x:50%">
-                  <img class="ba-img" src={featAntes} alt={`${feat.data.titulo} antes de la obra`}>
-                  <div class="ba-after"><img class="ba-img" src={featDesp} alt={`${feat.data.titulo} después de la obra`}></div>
+                  <img class="ba-img" {...featAntes} alt={`${feat.data.titulo} antes de la obra`} loading="lazy">
+                  <div class="ba-after"><img class="ba-img" {...featDesp} alt={`${feat.data.titulo} después de la obra`} loading="lazy"></div>
                   <div class="ba-handle" aria-hidden="true"><span><Icon d={IC.ba} w={2.4} /></span></div>
                   <span class="ba-tag ba-tag-l">Antes</span><span class="ba-tag ba-tag-r">Después</span>
                   <input type="range" min="0" max="100" value="50" aria-label={`Deslice para comparar el antes y el después de ${feat.data.titulo}`}>
                 </div>
               ) : featAntes ? (
                 <div class="cmp">
-                  <figure><img src={featAntes} alt={`${feat.data.titulo} antes de la obra`} loading="lazy"><figcaption>Antes</figcaption></figure>
-                  <figure><img src={featDesp} alt={`${feat.data.titulo} después de la obra`} loading="lazy"><figcaption>Después</figcaption></figure>
+                  <figure><img {...featAntes} alt={`${feat.data.titulo} antes de la obra`} loading="lazy"><figcaption>Antes</figcaption></figure>
+                  <figure><img {...featDesp} alt={`${feat.data.titulo} después de la obra`} loading="lazy"><figcaption>Después</figcaption></figure>
                 </div>
               ) : (
                 <Picture src={feat.data.portada!} formats={['webp']} fallbackFormat="webp" widths={[800, 1300]} sizes="(max-width:1000px) 100vw, 58vw" alt={feat.data.titulo} />
@@ -92,7 +96,7 @@ if (feat?.data.antes && feat.data.portada) {
 
         <div class="grid" id="grid">
           {obras.map((o) => {
-            const n = fotosDe(o.id).length;
+            const n = fotosDe(o).length;
             return (
               <article class="card" data-id={o.id} data-tipo={o.data.tipo}>
                 <div class="media">
@@ -132,7 +136,7 @@ if (feat?.data.antes && feat.data.portada) {
   <div class="band" style="margin-top:90px">
     <div class="wrap">
       <h2>¿Quiere que ejecutemos su obra?</h2>
-      <a class="btn" href="/#contacto">Solicitar cotización</a>
+      <a class="btn" href="/contacto/">Solicitar cotización</a>
     </div>
   </div>
 

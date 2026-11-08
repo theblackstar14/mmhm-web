@@ -1,10 +1,36 @@
+// Si cambia el contacto o la dirección, actualizar también a mano src/content/legal/privacidad.md y terminos.md.
+export const EMPRESA = 'MM High Metrik Engineers S.A.C.';
 export const WA = '51955137140';
 export const TEL = '+51955137140';
 export const TEL_TXT = '(+51) 955 137 140';
 export const MAIL = 'mmhighmetrik@gmail.com';
-export const BROCHURE = 'https://www.mmhighmetrik.com/brochure.pdf';
+export const DIRECCION = 'Av. República de Colombia 625, Of. 501';
+export const DISTRITO = 'San Isidro';
+export const DIR_MAPA = 'Av. República de Colombia 625, San Isidro, Lima';
+export const HORARIO = 'Lunes a viernes, 8 a.m. a 6 p.m.';
+export const FACEBOOK = 'https://www.facebook.com/share/1EMLLRL683/?mibextid=wwXIfr';
+export const INSTAGRAM = 'https://www.instagram.com/mmhighmetrik.pe';
+export const BROCHURE = '/brochure.pdf';
+/** Máximo de obras en la franja "Más obras realizadas" del Inicio. */
+export const MAX_OBRAS_FRANJA = 4;
 
 export const waUrl = (txt: string) => `https://wa.me/${WA}?text=${encodeURIComponent(txt)}`;
+
+/**
+ * Clientes de la franja "Han confiado en nosotros".
+ * n: nombre (también es el alt). logo: ruta dentro de /public (opcional). url: sitio del cliente (opcional).
+ * Si falta el logo o el archivo no existe, se muestra el nombre en texto.
+ */
+export type Cliente = { n: string; logo?: string; url?: string };
+export const CLIENTES: Cliente[] = [
+  { n: 'Municipalidad de Lima', logo: '/assets/clientes/logo-municipalidad-de-lima.svg' },
+  { n: 'Arias Inmobiliaria', logo: '/assets/clientes/logo-arias.png' },
+  { n: 'PROLIMA', logo: '/assets/clientes/logo-prolima.svg' },
+  { n: 'SIGSA Geomembranas y Geosintéticos', logo: '/assets/clientes/logo-sigsa.png' },
+  { n: 'Osinergmin', logo: '/assets/clientes/logo-osinergmin.svg' },
+  { n: 'Top Decor Muebles', logo: '/assets/clientes/logo-topdecor.png' },
+  { n: 'Municipalidad de Santiago de Surco', logo: '/assets/clientes/logo-municipalidad-de-santiago-de-surco.svg' },
+];
 
 export type TipoKey = 'geo' | 'rio' | 'pub' | 'edif';
 export const TIPOS: Record<TipoKey, { n: string; i: string }> = {
@@ -34,67 +60,70 @@ export const SICO: Record<string, string> = {
 export const sico = (k: string, w = 1.7) =>
   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${SICO[k]}</svg>`;
 
-export interface Servicio { id: string; sh: string; f: string; ic: string; t: string; c: string; d: string; a: string[]; img: string; obras: string[] }
+/* img: ruta relativa a src/assets/sitio/ */
+export interface Servicio { id: string; sh: string; f: string; ic: string; t: string; c: string; d: string; a: string[]; img: string }
 const _SERVICIOS: Servicio[] = [
   { id: 'movimiento-de-tierras', sh: 'Movimiento de tierras', f: 'inf', ic: 'tierras', t: 'Movimiento de tierras', c: 'Excavación, relleno, nivelación y transporte con maquinaria pesada.',
     d: 'Ejecutamos trabajos de movimiento de tierras con maquinaria pesada, garantizando eficiencia, seguridad y cumplimiento de las especificaciones técnicas en cada proyecto.',
     a: ['Excavación y corte de terrenos', 'Relleno y compactación de suelos', 'Nivelación y perfilado de terrenos', 'Control de volúmenes y rendimientos', 'Transporte y disposición de material'],
-    img: '/assets/servicios/movimiento-tierras.jpg', obras: ['rio-lurin', 'rio-rimac-faja', 'rio-osomayo'] },
+    img: 'servicios/movimiento-tierras.jpg' },
   { id: 'defensas-riberenas', sh: 'Defensas ribereñas', f: 'inf', ic: 'rio', t: 'Mantenimiento de defensas ribereñas', c: 'Descolmatación, taludes y enrocado para proteger riberas y cauces.',
     d: 'Realizamos trabajos de mantenimiento y protección de defensas ribereñas, incluyendo descolmataciones, conformación de taludes y enrocado para salvaguardar riberas y cauces fluviales.',
     a: ['Descolmatación de cauces y ríos', 'Conformación y perfilado de taludes', 'Enrocado y protección de riberas', 'Gaviones y muros de protección fluvial', 'Monitoreo y mantenimiento preventivo'],
-    img: '/assets/servicios/defensas-riberenas.jpg', obras: ['rio-rimac-ramiro-priale', 'rio-lurin', 'pantanos-de-villa', 'rio-osomayo', 'rio-rimac-faja'] },
+    img: 'servicios/defensas-riberenas.jpg' },
   { id: 'obras-civiles', sh: 'Obras civiles', f: 'edi', ic: 'civiles', t: 'Obras civiles', c: 'Concreto, pavimentos, saneamiento y habilitación urbana.',
     d: 'Desarrollamos obras civiles de diversa envergadura con altos estándares de calidad, desde cimentaciones y estructuras de concreto hasta habilitaciones urbanas y vías de acceso.',
     a: ['Cimentaciones y estructuras de concreto', 'Construcción de pavimentos y veredas', 'Obras de saneamiento y drenaje', 'Habilitaciones urbanas', 'Muros de contención y sostenimiento'],
-    img: '/assets/proyectos/plaza-bolognesi.jpg', obras: ['plaza-bolognesi', 'plaza-dos-de-mayo', 'almacenes', 'crematorio-surco'] },
+    img: 'proyectos/plaza-bolognesi.jpg' },
   { id: 'ambientes-industriales', sh: 'Ambientes industriales', f: 'edi', ic: 'fabrica', t: 'Construcción de ambientes industriales', c: 'Naves, galpones, crematorios y ambientes técnicos especiales.',
     d: 'Construimos ambientes industriales especializados como crematorios, naves industriales y ambientes técnicos, cumpliendo las normativas técnicas, de seguridad y ambientales vigentes.',
     a: ['Crematorios y ambientes especiales', 'Naves industriales y galpones', 'Salas técnicas y cuartos de equipos', 'Ambientes con requerimientos técnicos especiales', 'Cumplimiento de normativas de seguridad'],
-    img: '/assets/servicios/ambientes-industriales.jpg', obras: ['almacenes', 'crematorio-surco'] },
+    img: 'servicios/ambientes-industriales.jpg' },
   { id: 'patrimonio-cultural', sh: 'Patrimonio cultural', f: 'edi', ic: 'columnas', t: 'Remodelación y reconstrucción de patrimonio cultural', c: 'Intervención en edificios y espacios de valor histórico.',
     d: 'Intervenimos edificios y espacios de valor histórico y cultural con respeto por los materiales y técnicas constructivas originales, coordinando con el Ministerio de Cultura y las entidades competentes.',
     a: ['Restauración de edificios históricos', 'Reconstrucción de fachadas patrimoniales', 'Rehabilitación de estructuras antiguas', 'Trabajos con materiales tradicionales', 'Coordinación con entidades culturales'],
-    img: '/assets/servicios/patrimonio.jpg', obras: ['plaza-bolognesi', 'plaza-dos-de-mayo', 'casa-hacienda'] },
+    img: 'servicios/patrimonio.jpg' },
   { id: 'estructuras-metalicas', sh: 'Estructuras metálicas', f: 'ins', ic: 'metal', t: 'Estructuras metálicas', c: 'Naves, escaleras, pasarelas y cerramientos a medida.',
     d: 'Diseñamos y construimos estructuras metálicas para uso industrial, comercial y residencial, con soldadura certificada y acabados de alta calidad.',
     a: ['Naves industriales y almacenes', 'Estructuras metálicas a medida', 'Cercos y cerramientos metálicos', 'Escaleras, pasarelas y plataformas', 'Soldadura y habilitación metálica'],
-    img: '/assets/servicios/estructuras-metalicas.jpg', obras: ['osinergmin', 'almacenes'] },
+    img: 'servicios/estructuras-metalicas.jpg' },
   { id: 'contraincendios', sh: 'Contraincendios', f: 'ins', ic: 'fuego', t: 'Sistemas contraincendios', c: 'Redes, rociadores, gabinetes y señalización para ITSE.',
     d: 'Instalamos y acondicionamos sistemas de protección contra incendios según la normativa vigente y los reglamentos técnicos peruanos, garantizando la seguridad de personas e instalaciones.',
     a: ['Redes de tuberías contra incendios', 'Sistemas de rociadores automáticos', 'Gabinetes y extintores', 'Bombas y sistemas de presurización', 'Señalización y rutas de evacuación'],
-    img: '/assets/servicios/contraincendios.jpg', obras: ['parque-canepa', 'crematorio-surco', 'osinergmin'] },
+    img: 'servicios/contraincendios.jpg' },
   { id: 'instalaciones-electricas', sh: 'Instalaciones eléctricas', f: 'ins', ic: 'rayo', t: 'Instalaciones eléctricas de media y baja tensión', c: 'Subestaciones, tableros, cableado y puesta a tierra.',
     d: 'Ejecutamos instalaciones eléctricas industriales y comerciales en media y baja tensión, con personal técnico calificado y materiales certificados.',
     a: ['Subestaciones eléctricas de media tensión', 'Tableros de distribución y control', 'Cableado y tendido eléctrico', 'Sistemas de puesta a tierra', 'Iluminación industrial y comercial'],
-    img: '/assets/servicios/electricas.jpg', obras: ['crematorio-surco'] },
+    img: 'servicios/electricas.jpg' },
   { id: 'polvorines', sh: 'Polvorines', f: 'edi', ic: 'polvorin', t: 'Polvorines y almacenes de explosivos', c: 'Almacenes para explosivos y materiales peligrosos según normativa.',
     d: 'Construimos polvorines y almacenes de explosivos para minería y obras de infraestructura, cumpliendo las condiciones de seguridad, distancias y especificaciones exigidas por la normativa vigente.',
     a: ['Polvorines para minería y construcción', 'Almacenes de explosivos y accesorios', 'Muros y cerramientos de seguridad', 'Pararrayos, puesta a tierra y señalización', 'Cumplimiento de la normativa de seguridad'],
-    img: '/assets/servicios/polvorines.jpg', obras: ['almacenes'] },
+    img: 'servicios/polvorines.jpg' },
   { id: 'plazas-publicas', sh: 'Plazas públicas', f: 'edi', ic: 'plaza', t: 'Mantenimiento y remodelación de plazas públicas', c: 'Pisos, sardineles, áreas verdes y mobiliario urbano.',
     d: 'Mantenemos y remodelamos plazas emblemáticas preservando su valor histórico y mejorando su funcionalidad para el ciudadano.',
     a: ['Renovación de pisos y pavimentos de piedra', 'Sardineles y bordes de granito', 'Áreas verdes y jardinería', 'Mobiliario urbano', 'Iluminación y sistemas eléctricos'],
-    img: '/assets/servicios/plazas.jpg', obras: ['plaza-bolognesi', 'plaza-dos-de-mayo'] },
+    img: 'servicios/plazas.jpg' },
   { id: 'demoliciones', sh: 'Demoliciones', f: 'inf', ic: 'demoler', t: 'Demoliciones y desmontajes', c: 'Demolición de estructuras, desmontaje y eliminación de residuos.',
     d: 'Ejecutamos demoliciones y desmontajes controlados de losas, muros, estructuras y elementos existentes, con eliminación de residuos en rellenos autorizados.',
     a: ['Demolición de losas, muros y sardineles', 'Desmontaje de estructuras y carpintería', 'Desmontaje de instalaciones existentes', 'Acarreo y eliminación de desmonte', 'Disposición en rellenos sanitarios autorizados'],
-    img: '/assets/servicios/demoliciones.jpg', obras: ['rio-rimac-faja', 'plaza-bolognesi', 'plaza-dos-de-mayo', 'osinergmin', 'crematorio-surco'] },
+    img: 'servicios/demoliciones.jpg' },
   { id: 'geomallas', sh: 'Geomallas', f: 'inf', ic: 'talud', t: 'Instalación y mantenimiento de geomallas', c: 'Estabilización de taludes, acantilados y terraplenes.',
     d: 'Instalamos y mantenemos geomallas de refuerzo para estabilizar taludes, acantilados y terraplenes, con personal especializado en trabajos en altura.',
     a: ['Geomallas de refuerzo para taludes', 'Estabilización de suelos y terraplenes', 'Protección de acantilados y laderas', 'Mantenimiento de geosintéticos instalados', 'Ensayos y control de calidad'],
-    img: '/assets/servicios/geomallas.jpg', obras: ['costa-verde', 'malecon-castagnola'] },
+    img: 'servicios/geomallas.jpg' },
   { id: 'instituciones-educativas', sh: 'Instituciones educativas', f: 'edi', ic: 'escuela', t: 'Construcción y acondicionamiento de instituciones educativas', c: 'Aulas, laboratorios y servicios según normas del MINEDU.',
     d: 'Construimos y acondicionamos centros educativos conforme a las normas técnicas del sector, con espacios seguros, funcionales y adecuados para el aprendizaje.',
     a: ['Aulas y ambientes pedagógicos', 'Laboratorios, bibliotecas y talleres', 'Infraestructura sanitaria y eléctrica', 'Cercos perimétricos y losas deportivas', 'Cumplimiento de las normas del MINEDU'],
-    img: '/assets/servicios/educativas.jpg', obras: [] },
+    img: 'servicios/educativas.jpg' },
   { id: 'expedientes-tecnicos', sh: 'Expedientes técnicos', f: 'ing', ic: 'plano', t: 'Elaboración de expedientes técnicos', c: 'Memorias, planos, metrados, presupuestos y cronogramas.',
     d: 'Elaboramos expedientes técnicos completos para obras públicas y privadas: memoria descriptiva, planos, especificaciones, metrados, presupuesto y cronograma.',
     a: ['Memorias descriptivas y cálculos', 'Planos de arquitectura e ingeniería', 'Especificaciones técnicas y metrados', 'Presupuestos y análisis de costos unitarios', 'Cronogramas y programación de obra'],
-    img: '/assets/servicios/expedientes.jpg', obras: ['casa-hacienda'] },
+    img: 'servicios/expedientes.jpg' },
 ];
 const _ORD = Object.keys(FAMILIAS);
 /** Ordenados por especialidad para que la numeración coincida con el índice. */
 export const SERVICIOS: Servicio[] = [..._SERVICIOS].sort((a, b) => _ORD.indexOf(a.f) - _ORD.indexOf(b.f));
+/** Ids válidos para el campo `servicios` de cada obra (se valida en content.config.ts). */
+export const SERVICIO_IDS = SERVICIOS.map((s) => s.id) as [string, ...string[]];
 export const nn = (i: number) => String(i + 1).padStart(2, '0');
 export const fmtLL = ([a, b]: [number, number]) => `${Math.abs(a).toFixed(2)}° S, ${Math.abs(b).toFixed(2)}° O`;
