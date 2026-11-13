@@ -31,7 +31,8 @@ const og = new URL(image ?? '/assets/hero-excavadora.jpg', Astro.site).href;
 <meta property="og:image:alt" content={title} />
 <meta name="twitter:image" content={og} />
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="/assets/logo-blanco.png">
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="preload" href="/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
 <slot name="head" />
 {enVercel && <script is:inline>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>}
