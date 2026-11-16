@@ -45,7 +45,7 @@ El fork actual no sirve para producción: es público y GitHub no permite hacer 
 1. Cree la organización y exija 2FA. Ver `docs/ACCESOS.md`. [PENDIENTE: organización]
 2. Cree un repositorio **privado y vacío**, que no sea un fork. [PENDIENTE: nombre]
 3. Deje en su `main` todas las tareas aprobadas, porque el panel crea las ramas desde allí y Cloudflare publica desde allí. [PENDIENTE: el líder del proyecto decide qué rama se lleva]
-4. En `keystatic.config.ts`, cambie `storage.repo`, que hoy apunta a `steffano-llo/mmhm-web`.
+4. Defina `PUBLIC_KEYSTATIC_REPO` con el repo de producción (hoy `theblackstar14/mmhm-web`). `keystatic.config.ts` la lee; no hace falta editarlo.
 5. Dé acceso a las personas según los roles de `docs/ACCESOS.md`.
 
 ## 2. GitHub App nueva

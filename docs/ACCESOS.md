@@ -47,7 +47,7 @@ La página de planes de GitHub no lo indica de forma explícita para organizacio
 
 Al crearlo:
 
-1. Actualice `storage.repo` en `keystatic.config.ts`, que hoy apunta a `steffano-llo/mmhm-web`.
+1. Si el repo cambia, actualice la variable `PUBLIC_KEYSTATIC_REPO` (hoy `theblackstar14/mmhm-web`); no hace falta tocar `keystatic.config.ts`.
 2. Deje `main` al día, porque el panel crea las ramas desde allí.
 3. Instale la GitHub App solo en ese repositorio.
 
