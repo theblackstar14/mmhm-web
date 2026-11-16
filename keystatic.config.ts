@@ -4,6 +4,8 @@ import { SERVICIOS, TIPOS } from './src/lib/site';
 
 // Por defecto trabaja en local. El modo GitHub se activa con --mode github (npm run dev:panel, build:panel).
 const modoGithub = import.meta.env.MODE === 'github';
+// Repo donde el panel guarda los cambios (cada guardado es un commit). Se puede cambiar sin tocar código con PUBLIC_KEYSTATIC_REPO.
+const REPO = (import.meta.env.PUBLIC_KEYSTATIC_REPO || 'theblackstar14/mmhm-web') as `${string}/${string}`;
 
 const texto = (label: string, description?: string) => fields.text({ label, description });
 const textoLargo = (label: string, description?: string) => fields.text({ label, description, multiline: true });
@@ -71,7 +73,7 @@ const coordenadas = (label: string, description: string) => {
 export default config({
   locale: 'es-ES',
   storage: modoGithub
-    ? { kind: 'github', repo: { owner: 'steffano-llo', name: 'mmhm-web' } }
+    ? { kind: 'github', repo: REPO }
     : { kind: 'local' },
   collections: {
     obras: collection({
